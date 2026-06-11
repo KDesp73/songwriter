@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { type Section, type ProgressionSlot } from "@/lib/types"
-import { transposeChord, transposeNote } from "@/lib/chords"
+import { transposeChord, transposeNote, getRelativeKey, getModalInterchangeChords, chordBadgeColor, formatChord } from "@/lib/chords"
 import { loadSong } from "@/lib/storage"
 import { usePersistedSong } from "@/hooks/usePersistedSong"
 import { Button } from "@/components/ui/button"
@@ -313,6 +313,39 @@ export default function ChordProgressionBuilder() {
               onKeyChange={setKey}
               onScaleChange={setScale}
             />
+
+            {/* Relative key & modal interchange */}
+            {(() => {
+              const relative = getRelativeKey(song.key, song.scale)
+              const borrowed = song.scale === "major" ? getModalInterchangeChords(song.key, song.scale) : []
+              return (
+                <div className="rounded-lg border border-border/50 bg-muted/20 p-3">
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                    Relative {song.scale === "major" ? "Minor" : "Major"}
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {relative.root} {relative.scale === "major" ? "Major" : "Minor"}
+                  </p>
+                  {borrowed.length > 0 && (
+                    <>
+                      <p className="mb-1.5 mt-2.5 text-xs font-medium text-muted-foreground">
+                        Borrowed (Parallel Minor)
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {borrowed.map((c, i) => (
+                          <span
+                            key={i}
+                            className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${chordBadgeColor(c.quality)}`}
+                          >
+                            {formatChord(c.root, c.quality)}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )
+            })()}
 
             {/* BPM & Capo */}
             <div className="flex gap-4">

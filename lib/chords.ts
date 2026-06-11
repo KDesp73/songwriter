@@ -213,3 +213,19 @@ export function capoInfo(chord: { root: string; quality: string }, capoFret: num
     actual: formatChord(actual.root, actual.quality),
   }
 }
+
+export function getRelativeKey(root: string, scale: "major" | "minor"): { root: string; scale: "major" | "minor" } {
+  if (scale === "major") {
+    return { root: noteName(semitoneOf(root) - 3), scale: "minor" }
+  }
+  return { root: noteName(semitoneOf(root) + 3), scale: "major" }
+}
+
+export function getModalInterchangeChords(root: string, scale: "major" | "minor"): DiatonicChord[] {
+  if (scale === "minor") return []
+  const parallelMinor = getDiatonicChords(root, "minor")
+  const diatonic = getDiatonicChords(root, "major")
+  return parallelMinor.filter(
+    (pc) => !diatonic.some((dc) => dc.root === pc.root && dc.quality === pc.quality),
+  )
+}

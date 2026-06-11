@@ -39,6 +39,7 @@ export default function ChordProgressionBuilder() {
   const [activeSectionId, setActiveSectionId] = useState<string>(song.sections[0]?.id ?? "")
   const [showSongList, setShowSongList] = useState(false)
   const [metronome, setMetronome] = useState(false)
+  const [dragSectionIndex, setDragSectionIndex] = useState<number | null>(null)
   const tapTimes = useRef<number[]>([])
 
   function handleTapTempo() {
@@ -93,6 +94,16 @@ export default function ChordProgressionBuilder() {
     const remaining = song.sections.filter((s) => s.id !== sectionId)
     const nextIdx = Math.min(idx, remaining.length - 1)
     setActiveSectionId(remaining[nextIdx]?.id ?? "")
+  }
+
+  function reorderSection(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return
+    updateSong((prev) => {
+      const sections = [...prev.sections]
+      const [moved] = sections.splice(fromIndex, 1)
+      sections.splice(toIndex, 0, moved)
+      return { ...prev, sections }
+    })
   }
 
   function addChordToActiveSection(chord: { root: string; quality: string }) {
@@ -379,11 +390,27 @@ export default function ChordProgressionBuilder() {
         {/* Main */}
         <main className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
           <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-            {song.sections.map((section) => (
+            {song.sections.map((section, index) => (
               <div
                 key={section.id}
                 onClick={() => setActiveSectionId(section.id)}
+                draggable
+                onDragStart={() => setDragSectionIndex(index)}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = "move"
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  if (dragSectionIndex !== null) {
+                    reorderSection(dragSectionIndex, index)
+                    setDragSectionIndex(null)
+                  }
+                }}
+                onDragEnd={() => setDragSectionIndex(null)}
                 className={`cursor-pointer rounded-xl transition-all ${
+                  dragSectionIndex === index ? "opacity-40" : ""
+                } ${
                   activeSectionId === section.id
                     ? "ring-1 ring-primary/40"
                     : "opacity-70 hover:opacity-90"

@@ -36,9 +36,6 @@ export default function Header({ metronome, onMetronomeChange, waveform, onWavef
             </svg>
           </button>
           <div className="flex items-center gap-2.5">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary font-mono text-sm font-bold text-primary-foreground">
-              S
-            </span>
             <h1 className="text-base font-bold tracking-tight sm:text-lg">Songwriter</h1>
           </div>
           <span className="hidden h-4 w-px bg-border md:block" />

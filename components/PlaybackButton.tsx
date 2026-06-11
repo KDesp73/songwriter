@@ -9,10 +9,11 @@ interface PlaybackButtonProps {
   progression: ProgressionSlot[]
   bpm: number
   metronome?: boolean
+  waveform?: "triangle" | "sine" | "square" | "sawtooth"
   onChordChange?: (index: number | null) => void
 }
 
-export default function PlaybackButton({ progression, bpm, metronome, onChordChange }: PlaybackButtonProps) {
+export default function PlaybackButton({ progression, bpm, metronome, waveform, onChordChange }: PlaybackButtonProps) {
   const [playing, setPlaying] = useState(false)
   const engineRef = useRef<AudioEngine | null>(null)
 
@@ -38,7 +39,7 @@ export default function PlaybackButton({ progression, bpm, metronome, onChordCha
       await getEngine().playProgression(progression, bpm, (i) => {
         onChordChange?.(i)
         if (i === null) setPlaying(false)
-      }, metronome)
+      }, metronome, waveform)
     } finally {
       setPlaying(false)
     }

@@ -227,7 +227,7 @@ export default function ChordProgressionBuilder() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <Header metronome={metronome} onMetronomeChange={setMetronome} onExport={handleExport} />
+      <Header metronome={metronome} onMetronomeChange={setMetronome} waveform={song.waveform} onWaveformChange={(w) => updateSong((s) => ({ ...s, waveform: w }))} onExport={handleExport} />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">
@@ -431,6 +431,7 @@ export default function ChordProgressionBuilder() {
                   onCopySection={() => handleCopySection(section.id)}
                   onPasteSection={() => handlePasteSection(section.id)}
                   metronome={metronome}
+                  waveform={song.waveform}
                   songKey={song.key}
                   songScale={song.scale}
                 />

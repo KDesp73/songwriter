@@ -7,10 +7,12 @@ import ScaleExplorer from "./ScaleExplorer"
 interface HeaderProps {
   metronome: boolean
   onMetronomeChange: (on: boolean) => void
+  waveform: "triangle" | "sine" | "square" | "sawtooth"
+  onWaveformChange: (w: "triangle" | "sine" | "square" | "sawtooth") => void
   onExport: () => void
 }
 
-export default function Header({ metronome, onMetronomeChange, onExport }: HeaderProps) {
+export default function Header({ metronome, onMetronomeChange, waveform, onWaveformChange, onExport }: HeaderProps) {
   const [showScales, setShowScales] = useState(false)
 
   return (
@@ -45,6 +47,17 @@ export default function Header({ metronome, onMetronomeChange, onExport }: Heade
             </svg>
             Click
           </button>
+          <select
+            value={waveform}
+            onChange={(e) => onWaveformChange(e.target.value as "triangle" | "sine" | "square" | "sawtooth")}
+            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Waveform"
+          >
+            <option value="triangle">Triangle</option>
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="sawtooth">Sawtooth</option>
+          </select>
           <button
             onClick={onExport}
             className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

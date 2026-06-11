@@ -1,4 +1,4 @@
-import { type ProgressionSlot } from "@/lib/types"
+import { type ProgressionSlot, type WaveformType } from "@/lib/types"
 import { getChordNotes, type QualityKey } from "@/lib/chords"
 
 const BASE_MIDI = 48
@@ -21,7 +21,7 @@ export class AudioEngine {
     return this.ctx
   }
 
-  private playChordNotes(intervals: number[], startTime: number, duration: number) {
+  private playChordNotes(intervals: number[], startTime: number, duration: number, waveform: WaveformType = "triangle") {
     const ctx = this.getCtx()
 
     intervals.forEach((interval) => {
@@ -31,7 +31,7 @@ export class AudioEngine {
       const osc = ctx.createOscillator()
       const gainNode = ctx.createGain()
 
-      osc.type = "triangle"
+      osc.type = waveform
       osc.frequency.value = freq
 
       gainNode.gain.setValueAtTime(0, startTime)
@@ -71,6 +71,7 @@ export class AudioEngine {
     bpm: number,
     onChordChange?: (index: number | null) => void,
     metronome = false,
+    waveform: WaveformType = "triangle",
   ): Promise<void> {
     this.stopped = false
     const ctx = this.getCtx()
@@ -86,7 +87,7 @@ export class AudioEngine {
       const duration = slot.beats * beatMs
       const intervals = getChordNotes(slot.chord.root, slot.chord.quality as QualityKey)
 
-      this.playChordNotes(intervals, t, duration)
+      this.playChordNotes(intervals, t, duration, waveform)
 
       if (metronome) {
         for (let b = 0; b < slot.beats; b++) {

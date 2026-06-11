@@ -49,6 +49,7 @@ export function loadSong(id: string): Song | null {
     for (const section of song.sections) {
       if (!section.lyrics) section.lyrics = ""
     }
+    if (!song.waveform) song.waveform = "triangle"
     return song
   } catch {
     return null
@@ -69,6 +70,7 @@ export function createNewSong(title?: string): Song {
     scale: "major",
     tempo: 120,
     capoFret: 0,
+    waveform: "triangle",
     sections: [
       {
         id: crypto.randomUUID(),

@@ -16,6 +16,8 @@ export interface Section {
   lyrics: string
 }
 
+export type WaveformType = "triangle" | "sine" | "square" | "sawtooth"
+
 export interface Song {
   id: string
   title: string
@@ -23,6 +25,7 @@ export interface Song {
   scale: "major" | "minor"
   tempo: number
   capoFret: number
+  waveform: WaveformType
   sections: Section[]
   updatedAt: number
 }

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo, chordBadgeColor, analyzeChord } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,7 @@ interface SectionBlockProps {
   onRemoveSection: () => void
   onTabChange: (tab: string) => void
   onLyricsChange: (lyrics: string) => void
+  onAddChord: (chord: { root: string; quality: string }) => void
   canPaste: boolean
   onCopySection: () => void
   onPasteSection: () => void
@@ -126,13 +127,18 @@ export default function SectionBlock({
   onRemoveSection,
   onTabChange,
   onLyricsChange,
+  onAddChord,
   canPaste,
   onCopySection,
   onPasteSection,
 }: SectionBlockProps) {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [showAddMenu, setShowAddMenu] = useState(false)
   const dragIndex = useRef<number | null>(null)
+  const addBtnRef = useRef<HTMLButtonElement>(null)
+
+  const diatonicChords = getDiatonicChords(songKey, songScale)
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -228,12 +234,43 @@ export default function SectionBlock({
             </div>
           )
         })}
-        <Button variant="outline" size="sm" onClick={onFocusSection} className="h-7 gap-1 rounded-md text-xs font-medium">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-          Add
-        </Button>
+        <div className="relative">
+          <Button variant="outline" size="sm" ref={addBtnRef} onClick={(e) => { e.stopPropagation(); setShowAddMenu(!showAddMenu); onFocusSection() }} className="h-7 gap-1 rounded-md text-xs font-medium">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            Add
+          </Button>
+          {showAddMenu && addBtnRef.current && createPortal(
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowAddMenu(false)} />
+              <div
+                className="fixed z-50 mt-1 w-56 rounded-xl border bg-popover p-2 shadow-xl"
+                style={{
+                  top: addBtnRef.current.getBoundingClientRect().bottom + 4,
+                  left: addBtnRef.current.getBoundingClientRect().left,
+                }}
+                onClick={() => setShowAddMenu(false)}
+              >
+                <p className="px-2 pb-1.5 pt-1 text-[11px] font-medium text-muted-foreground/70">
+                  Diatonic chords
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {diatonicChords.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.stopPropagation(); onAddChord({ root: c.root, quality: c.quality }); setShowAddMenu(false) }}
+                      className={`rounded-md px-2 py-1 text-xs font-medium transition-colors hover:brightness-125 ${chordBadgeColor(c.quality)}`}
+                    >
+                      {formatChord(c.root, c.quality)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>,
+            document.body
+          )}
+        </div>
       </div>
 
       {/* Lyrics */}

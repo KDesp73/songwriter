@@ -119,6 +119,17 @@ export default function ChordProgressionBuilder() {
     }))
   }
 
+  function addChordToSection(sectionId: string, chord: { root: string; quality: string }) {
+    const slot: ProgressionSlot = {
+      chord: { root: chord.root, quality: chord.quality },
+      beats: 4,
+    }
+    updateSection(sectionId, (sec) => ({
+      ...sec,
+      progression: [...sec.progression, slot],
+    }))
+  }
+
   function removeChordFromSection(sectionId: string, index: number) {
     updateSection(sectionId, (sec) => ({
       ...sec,
@@ -465,6 +476,7 @@ export default function ChordProgressionBuilder() {
                   onRemoveSection={() => removeSection(section.id)}
                   onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
                   onLyricsChange={(lyrics) => updateSection(section.id, (s) => ({ ...s, lyrics }))}
+                  onAddChord={(chord) => addChordToSection(section.id, chord)}
                   canPaste={copiedSection !== null}
                   onCopySection={() => handleCopySection(section.id)}
                   onPasteSection={() => handlePasteSection(section.id)}

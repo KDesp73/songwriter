@@ -623,8 +623,8 @@ export default function ChordProgressionBuilder() {
             )}
 
             {/* Controls help */}
-            <details className="group rounded-lg border border-border/40 bg-muted/10 p-2.5">
-              <summary className="cursor-pointer text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+            <details className="group list-none rounded-lg border border-border/40 bg-muted/10 p-2.5 [&::-webkit-details-marker]:hidden">
+              <summary className="cursor-pointer text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
                 <span className="inline-flex items-center gap-1.5">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="transition-transform group-open:rotate-90">
                     <path d="M4 2L8 6L4 10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />

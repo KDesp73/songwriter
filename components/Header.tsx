@@ -7,9 +7,10 @@ import ScaleExplorer from "./ScaleExplorer"
 interface HeaderProps {
   metronome: boolean
   onMetronomeChange: (on: boolean) => void
+  onExport: () => void
 }
 
-export default function Header({ metronome, onMetronomeChange }: HeaderProps) {
+export default function Header({ metronome, onMetronomeChange, onExport }: HeaderProps) {
   const [showScales, setShowScales] = useState(false)
 
   return (
@@ -43,6 +44,17 @@ export default function Header({ metronome, onMetronomeChange }: HeaderProps) {
               <rect x="10" y="2" width="2" height="11" rx="0.5" fill="currentColor" />
             </svg>
             Click
+          </button>
+          <button
+            onClick={onExport}
+            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Download PDF"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 2V9M7 9L4.5 6.5M7 9L9.5 6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 9V11.5C2 12.05 2.45 12.5 3 12.5H11C11.55 12.5 12 12.05 12 11.5V9" stroke="currentColor" strokeWidth="1.2" fill="none" />
+            </svg>
+            PDF
           </button>
           <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="h-7 gap-1.5 rounded-lg text-xs">
             <span className="inline-block size-2 rounded-full bg-primary" />

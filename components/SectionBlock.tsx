@@ -151,7 +151,7 @@ export default function SectionBlock({
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       {/* Track header */}
-      <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-2 sm:gap-3 sm:px-4">
         <PlaybackButton
           progression={section.progression}
           bpm={bpm}
@@ -167,7 +167,7 @@ export default function SectionBlock({
           placeholder="Section name"
         />
         {section.progression.length > 0 && (
-          <span className="ml-auto text-sm text-muted-foreground">
+          <span className="ml-auto hidden text-sm text-muted-foreground sm:inline">
             {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}
           </span>
         )}
@@ -208,7 +208,7 @@ export default function SectionBlock({
       </div>
 
       {/* Chord row */}
-      <div className="flex flex-wrap items-start gap-2 px-4 py-3">
+      <div className="flex flex-wrap items-start gap-2 px-3 py-3 sm:px-4">
         {section.progression.map((slot, i) => {
           const analysis = analyzeChord(slot.chord, songKey, songScale)
           return (

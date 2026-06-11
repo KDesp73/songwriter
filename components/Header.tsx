@@ -11,30 +11,45 @@ interface HeaderProps {
   onWaveformChange: (w: "triangle" | "sine" | "square" | "sawtooth") => void
   onExport: () => void
   onExportMidi: () => void
+  sidebarOpen: boolean
+  onSidebarToggle: () => void
 }
 
-export default function Header({ metronome, onMetronomeChange, waveform, onWaveformChange, onExport, onExportMidi }: HeaderProps) {
+export default function Header({ metronome, onMetronomeChange, waveform, onWaveformChange, onExport, onExportMidi, sidebarOpen, onSidebarToggle }: HeaderProps) {
   const [showScales, setShowScales] = useState(false)
 
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-sidebar px-5">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-sidebar px-3 sm:px-5">
         <div className="flex items-center gap-3">
+          <button
+            onClick={onSidebarToggle}
+            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+            aria-label="Toggle sidebar"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              {sidebarOpen ? (
+                <path d="M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              ) : (
+                <path d="M3 4.5H15M3 9H15M3 13.5H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
           <div className="flex items-center gap-2.5">
             <span className="flex size-7 items-center justify-center rounded-lg bg-primary font-mono text-sm font-bold text-primary-foreground">
               S
             </span>
-            <h1 className="text-lg font-bold tracking-tight">Songwriter</h1>
+            <h1 className="text-base font-bold tracking-tight sm:text-lg">Songwriter</h1>
           </div>
-          <span className="hidden h-4 w-px bg-border sm:block" />
-          <span className="hidden text-sm text-muted-foreground sm:inline">
+          <span className="hidden h-4 w-px bg-border md:block" />
+          <span className="hidden text-sm text-muted-foreground md:inline">
             Chord Progression Builder
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => onMetronomeChange(!metronome)}
-            className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
+            className={`hidden h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium transition-colors sm:flex ${
               metronome
                 ? "bg-primary/15 text-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -51,7 +66,7 @@ export default function Header({ metronome, onMetronomeChange, waveform, onWavef
           <select
             value={waveform}
             onChange={(e) => onWaveformChange(e.target.value as "triangle" | "sine" | "square" | "sawtooth")}
-            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="hidden h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex"
             title="Waveform"
           >
             <option value="triangle">Triangle</option>
@@ -61,29 +76,29 @@ export default function Header({ metronome, onMetronomeChange, waveform, onWavef
           </select>
           <button
             onClick={onExport}
-            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title="Download PDF"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 2V9M7 9L4.5 6.5M7 9L9.5 6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2 9V11.5C2 12.05 2.45 12.5 3 12.5H11C11.55 12.5 12 12.05 12 11.5V9" stroke="currentColor" strokeWidth="1.2" fill="none" />
             </svg>
-            PDF
+            <span className="hidden sm:inline">PDF</span>
           </button>
           <button
             onClick={onExportMidi}
-            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-7 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title="Download MIDI"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
               <path d="M5 5V9M7 5V9M9 5V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
-            MIDI
+            <span className="hidden sm:inline">MIDI</span>
           </button>
-          <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="h-7 gap-1.5 rounded-lg text-xs">
+          <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="h-7 gap-1.5 rounded-lg px-2 text-xs">
             <span className="inline-block size-2 rounded-full bg-primary" />
-            Scales
+            <span className="hidden sm:inline">Scales</span>
           </Button>
         </div>
       </header>

@@ -42,6 +42,7 @@ export default function ChordProgressionBuilder() {
   const [showSongList, setShowSongList] = useState(false)
   const [metronome, setMetronome] = useState(false)
   const [dragSectionIndex, setDragSectionIndex] = useState<number | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const tapTimes = useRef<number[]>([])
 
   function handleTapTempo() {
@@ -343,11 +344,19 @@ export default function ChordProgressionBuilder() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <Header metronome={metronome} onMetronomeChange={setMetronome} waveform={song.waveform} onWaveformChange={(w) => updateSong((s) => ({ ...s, waveform: w }))} onExport={handleExport} onExportMidi={handleExportMidi} />
+      <Header metronome={metronome} onMetronomeChange={setMetronome} waveform={song.waveform} onWaveformChange={(w) => updateSong((s) => ({ ...s, waveform: w }))} onExport={handleExport} onExportMidi={handleExportMidi} sidebarOpen={sidebarOpen} onSidebarToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar overlay on mobile */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
         {/* Sidebar */}
-        <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">
-          <div className="flex flex-col gap-5 p-5">
+        <aside className={`flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar transition-transform md:relative md:flex ${
+          sidebarOpen
+            ? "fixed inset-y-0 left-0 z-40 mt-12 flex"
+            : "hidden md:flex"
+        }`}>
+          <div className="flex flex-col gap-5 p-5 pt-3 md:pt-5">
             {/* Song Title */}
             <div className="flex items-center gap-2">
               <Input
@@ -537,8 +546,8 @@ export default function ChordProgressionBuilder() {
         </aside>
 
         {/* Main */}
-        <main className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
-          <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+        <main className="flex flex-1 flex-col overflow-y-auto bg-background p-3 sm:p-6">
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 sm:gap-4">
             {song.sections.map((section, index) => (
               <div
                 key={section.id}

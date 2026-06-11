@@ -17,7 +17,7 @@ export default function TabEditor({ value, onChange }: TabEditorProps) {
         variant="ghost"
         size="sm"
         onClick={() => setExpanded(!expanded)}
-        className="gap-1.5 text-muted-foreground"
+        className="h-8 gap-1.5 rounded-none border-t border-border px-4 text-sm text-muted-foreground hover:text-foreground"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           {expanded ? (
@@ -30,11 +30,11 @@ export default function TabEditor({ value, onChange }: TabEditorProps) {
       </Button>
 
       {expanded && (
-        <div className="mt-2 overflow-x-auto">
+        <div className="overflow-x-auto border-t border-border px-4 py-3">
           <textarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="min-h-[140px] w-full resize-y whitespace-pre rounded-lg border bg-background p-2 font-mono text-xs leading-relaxed outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="min-h-[160px] w-full resize-y whitespace-pre rounded-lg border bg-background/50 p-3 font-mono text-sm leading-relaxed text-foreground/90 outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             spellCheck={false}
           />
         </div>

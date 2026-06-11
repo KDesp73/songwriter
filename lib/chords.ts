@@ -56,6 +56,28 @@ export const QUALITY_GROUPS: { label: string; qualities: QualityKey[] }[] = [
   { label: "Sus", qualities: ["sus2", "sus4"] },
 ]
 
+const QUALITY_COLORS: Record<string, string> = {
+  "":     "bg-blue-500/15 text-blue-400 border-blue-500/25",
+  "m":    "bg-green-500/15 text-green-400 border-green-500/25",
+  "dim":  "bg-rose-500/15 text-rose-400 border-rose-500/25",
+  "dim7": "bg-rose-500/15 text-rose-400 border-rose-500/25",
+  "aug":  "bg-amber-500/15 text-amber-400 border-amber-500/25",
+  "7":    "bg-purple-500/15 text-purple-400 border-purple-500/25",
+  "maj7": "bg-purple-500/15 text-purple-400 border-purple-500/25",
+  "m7":   "bg-purple-500/15 text-purple-400 border-purple-500/25",
+  "m7b5": "bg-rose-500/15 text-rose-400 border-rose-500/25",
+  "sus2": "bg-cyan-500/15 text-cyan-400 border-cyan-500/25",
+  "sus4": "bg-cyan-500/15 text-cyan-400 border-cyan-500/25",
+  "6":    "bg-teal-500/15 text-teal-400 border-teal-500/25",
+  "m6":   "bg-teal-500/15 text-teal-400 border-teal-500/25",
+  "9":    "bg-pink-500/15 text-pink-400 border-pink-500/25",
+  "add9": "bg-pink-500/15 text-pink-400 border-pink-500/25",
+}
+
+export function chordBadgeColor(quality: string): string {
+  return QUALITY_COLORS[quality] ?? "bg-foreground/10 text-foreground border-foreground/20"
+}
+
 export const SCALE_PATTERNS: Record<string, number[]> = {
   major:       [0, 2, 4, 5, 7, 9, 11],
   "natural minor": [0, 2, 3, 5, 7, 8, 10],

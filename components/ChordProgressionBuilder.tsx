@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Header from "./Header"
 import KeySelector from "./KeySelector"
 import ChordPalette from "./ChordPalette"
 import SectionBlock from "./SectionBlock"
@@ -122,114 +123,130 @@ export default function ChordProgressionBuilder() {
   const activeSection = song.sections.find((s) => s.id === activeSectionId)
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      {/* Title & Key */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <Input
-          type="text"
-          value={song.title}
-          onChange={(e) => updateSong((s) => ({ ...s, title: e.target.value }))}
-          className="h-auto border-none bg-transparent p-0 text-2xl font-bold shadow-none focus-visible:ring-0"
-          placeholder="Song title"
-        />
-        <KeySelector
-          key_={song.key}
-          scale={song.scale}
-          onKeyChange={setKey}
-          onScaleChange={setScale}
-        />
-      </div>
-
-      {/* Tempo & Capo */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">BPM</span>
-          <Input
-            type="number"
-            min={20}
-            max={300}
-            value={song.tempo}
-            onChange={(e) => updateSong((s) => ({ ...s, tempo: Number(e.target.value) }))}
-            className="w-20"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Capo</span>
-          <Select
-            value={String(song.capoFret)}
-            onValueChange={(v) => setCapo(Number(v))}
-          >
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 13 }, (_, i) => (
-                <SelectItem key={i} value={String(i)}>
-                  {i === 0 ? "Off" : `Fret ${i}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Transpose Controls */}
-      <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2">
-        <span className="text-sm text-muted-foreground">Transpose</span>
-        <Button variant="outline" size="sm" onClick={() => transposeSong(-2)}>
-          -2
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => transposeSong(-1)}>
-          -1
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => transposeSong(1)}>
-          +1
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => transposeSong(2)}>
-          +2
-        </Button>
-      </div>
-
-      {/* Sections */}
-      <div className="flex flex-col gap-3">
-        {song.sections.map((section) => (
-          <div
-            key={section.id}
-            onClick={() => setActiveSectionId(section.id)}
-            className={`cursor-pointer rounded-xl transition-all ${
-              activeSectionId === section.id ? "ring-2 ring-primary/30" : ""
-            }`}
-          >
-            <SectionBlock
-              section={section}
-              capoFret={song.capoFret}
-              bpm={song.tempo}
-              onUpdateName={(name) => updateSection(section.id, (s) => ({ ...s, name }))}
-              onRemoveChord={(index) => removeChordFromSection(section.id, index)}
-              onFocusSection={() => setActiveSectionId(section.id)}
-              onRemoveSection={() => removeSection(section.id)}
-              onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
+    <div className="flex h-dvh flex-col">
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">
+          <div className="flex flex-col gap-5 p-5">
+            {/* Song Title */}
+            <Input
+              type="text"
+              value={song.title}
+              onChange={(e) => updateSong((s) => ({ ...s, title: e.target.value }))}
+              className="h-auto border-none bg-transparent p-0 text-2xl font-bold tracking-tight shadow-none focus-visible:ring-0"
+              placeholder="Song title"
             />
+
+            {/* Key & Scale */}
+            <KeySelector
+              key_={song.key}
+              scale={song.scale}
+              onKeyChange={setKey}
+              onScaleChange={setScale}
+            />
+
+            {/* BPM & Capo */}
+            <div className="flex gap-4">
+              <div className="flex flex-1 items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground">BPM</label>
+                <Input
+                  type="number"
+                  min={20}
+                  max={300}
+                  value={song.tempo}
+                  onChange={(e) => updateSong((s) => ({ ...s, tempo: Number(e.target.value) }))}
+                  className="h-9 flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground">Capo</label>
+                <Select
+                  value={String(song.capoFret)}
+                  onValueChange={(v) => setCapo(Number(v))}
+                >
+                  <SelectTrigger className="h-9 w-22">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 13 }, (_, i) => (
+                      <SelectItem key={i} value={String(i)}>
+                        {i === 0 ? "Off" : `Fret ${i}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Transpose */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-muted-foreground">Transpose</label>
+              <div className="flex gap-1.5">
+                {[-2, -1, 1, 2].map((semis) => (
+                  <Button
+                    key={semis}
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => transposeSong(semis)}
+                    className="h-8 flex-1 text-sm"
+                  >
+                    {semis > 0 ? `+${semis}` : semis}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chord Palette */}
+            {activeSection && (
+              <ChordPalette
+                root={song.key}
+                scale={song.scale}
+                onAddChord={addChordToActiveSection}
+              />
+            )}
           </div>
-        ))}
+        </aside>
 
-        <Button variant="outline" onClick={addSection} className="w-full border-dashed py-6">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          Add section
-        </Button>
+        {/* Main */}
+        <main className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+            {song.sections.map((section) => (
+              <div
+                key={section.id}
+                onClick={() => setActiveSectionId(section.id)}
+                className={`cursor-pointer rounded-xl transition-all ${
+                  activeSectionId === section.id
+                    ? "ring-1 ring-primary/40"
+                    : "opacity-70 hover:opacity-90"
+                }`}
+              >
+                <SectionBlock
+                  section={section}
+                  capoFret={song.capoFret}
+                  bpm={song.tempo}
+                  onUpdateName={(name) => updateSection(section.id, (s) => ({ ...s, name }))}
+                  onRemoveChord={(index) => removeChordFromSection(section.id, index)}
+                  onFocusSection={() => setActiveSectionId(section.id)}
+                  onRemoveSection={() => removeSection(section.id)}
+                  onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
+                />
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              onClick={addSection}
+              className="border-2 border-dashed py-6 text-sm text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-2">
+                <path d="M8 2V14M2 8H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              Add section
+            </Button>
+          </div>
+        </main>
       </div>
-
-      {/* Chord Palette */}
-      {activeSection && (
-        <ChordPalette
-          root={song.key}
-          scale={song.scale}
-          onAddChord={addChordToActiveSection}
-        />
-      )}
     </div>
   )
 }

@@ -18,27 +18,25 @@ interface KeySelectorProps {
 
 export default function KeySelector({ key_, scale, onKeyChange, onScaleChange }: KeySelectorProps) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Key</span>
+    <div className="flex gap-4">
+      <div className="flex flex-1 flex-col gap-1.5">
+        <label className="text-sm font-medium text-muted-foreground">Key</label>
         <Select value={key_} onValueChange={(v) => v && onKeyChange(v)}>
-          <SelectTrigger className="w-20">
+          <SelectTrigger className="h-9 w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {NOTES.map((note) => (
-              <SelectItem key={note} value={note}>
-                {note}
-              </SelectItem>
+              <SelectItem key={note} value={note}>{note}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Scale</span>
+      <div className="flex flex-1 flex-col gap-1.5">
+        <label className="text-sm font-medium text-muted-foreground">Scale</label>
         <Select value={scale} onValueChange={(v) => onScaleChange(v as "major" | "minor")}>
-          <SelectTrigger className="w-24">
+          <SelectTrigger className="h-9 w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

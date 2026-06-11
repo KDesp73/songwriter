@@ -3,18 +3,10 @@
 import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardAction,
-  CardFooter,
-} from "@/components/ui/card"
 import ChordDiagram from "./ChordDiagram"
 import TabEditor from "./TabEditor"
 import PlaybackButton from "./PlaybackButton"
@@ -61,16 +53,15 @@ function ChordBadge({
   return (
     <span className="relative inline-flex">
       <span ref={ref} onMouseEnter={show} onMouseLeave={hide}>
-        <Badge
-          variant={isPlaying ? "default" : "outline"}
-          className={`gap-2 py-1.5 pl-3 pr-1.5 text-sm transition-all ${
-            isPlaying ? "scale-110 shadow-md" : ""
+        <span
+          className={`inline-flex cursor-default items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm font-semibold transition-all ${
+            isPlaying ? "scale-110 !border-primary !bg-primary !text-primary-foreground shadow-lg shadow-primary/30" : chordBadgeColor(chord.quality)
           }`}
         >
           {info ? (
             <span title={`Shape: ${info.shape} → Sounds: ${info.actual}`}>
               {info.shape}
-              <span className="text-xs text-muted-foreground"> ({info.actual})</span>
+              <span className="text-xs font-normal opacity-60"> ({info.actual})</span>
             </span>
           ) : (
             chordName
@@ -80,14 +71,14 @@ function ChordBadge({
               e.stopPropagation()
               onRemove()
             }}
-            className="flex size-4 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            className="-mr-0.5 flex size-4 items-center justify-center rounded-full opacity-40 transition-all hover:bg-black/20 hover:opacity-100"
             aria-label={`Remove ${chordName}`}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+              <path d="M2 2L7 7M7 2L2 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             </svg>
           </button>
-        </Badge>
+        </span>
       </span>
 
       {tooltip && shape && createPortal(
@@ -98,7 +89,7 @@ function ChordBadge({
             left: tooltip.left,
             transform: "translate(-50%, -100%)",
           }}
-          className="z-50 rounded-xl border bg-popover p-2 shadow-md ring-1 ring-foreground/10"
+          className="z-50 rounded-xl border bg-popover p-2.5 shadow-xl"
           onMouseEnter={show}
           onMouseLeave={hide}
         >
@@ -123,65 +114,61 @@ export default function SectionBlock({
   const [playingIndex, setPlayingIndex] = useState<number | null>(null)
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <PlaybackButton
-            progression={section.progression}
-            bpm={bpm}
-            onChordChange={setPlayingIndex}
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      {/* Track header */}
+      <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5">
+        <PlaybackButton
+          progression={section.progression}
+          bpm={bpm}
+          onChordChange={setPlayingIndex}
+        />
+        <Input
+          type="text"
+          value={section.name}
+          onChange={(e) => onUpdateName(e.target.value)}
+          className="h-auto border-none bg-transparent p-0 text-base font-semibold tracking-tight shadow-none focus-visible:ring-0"
+          placeholder="Section name"
+        />
+        {section.progression.length > 0 && (
+          <span className="ml-auto text-sm text-muted-foreground">
+            {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}
+          </span>
+        )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemoveSection()
+          }}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:bg-destructive/10 hover:text-destructive"
+          aria-label="Remove section"
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M3.5 3.5L9.5 9.5M9.5 3.5L3.5 9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Chord row */}
+      <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
+        {section.progression.map((slot, i) => (
+          <ChordBadge
+            key={i}
+            chord={slot.chord}
+            capoFret={capoFret}
+            isPlaying={playingIndex === i}
+            onRemove={() => onRemoveChord(i)}
           />
-          <Input
-            type="text"
-            value={section.name}
-            onChange={(e) => onUpdateName(e.target.value)}
-            className="h-auto border-none bg-transparent p-0 text-base font-medium shadow-none focus-visible:ring-0"
-            placeholder="Section name"
-          />
-          {section.progression.length > 0 && (
-            <Badge variant="secondary" className="shrink-0">
-              {section.progression.length}
-            </Badge>
-          )}
-        </div>
-        <CardAction>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              onRemoveSection()
-            }}
-            aria-label="Remove section"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap items-center gap-2">
-          {section.progression.map((slot, i) => (
-            <ChordBadge
-              key={i}
-              chord={slot.chord}
-              capoFret={capoFret}
-              isPlaying={playingIndex === i}
-              onRemove={() => onRemoveChord(i)}
-            />
-          ))}
-          <Button variant="outline" size="sm" onClick={onFocusSection}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 2V12M2 7H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            Add chord
-          </Button>
-        </div>
-      </CardContent>
-      <CardFooter className="flex-col items-stretch gap-0 border-t-0 bg-transparent pt-0">
-        <TabEditor value={section.tab} onChange={onTabChange} />
-      </CardFooter>
-    </Card>
+        ))}
+        <Button variant="outline" size="sm" onClick={onFocusSection} className="h-7 gap-1 rounded-md text-xs font-medium">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+          Add
+        </Button>
+      </div>
+
+      {/* Tab */}
+      <TabEditor value={section.tab} onChange={onTabChange} />
+    </div>
   )
 }

@@ -24,6 +24,7 @@ function createSection(name: string): Section {
     id: crypto.randomUUID(),
     name,
     progression: [],
+    lyrics: "",
     tab: `e|------------------------------------------------------------------|
 B|------------------------------------------------------------------|
 G|------------------------------------------------------------------|
@@ -172,6 +173,12 @@ export default function ChordProgressionBuilder() {
       wrap(section.name, 14, "bold")
       const chords = section.progression.map(s => s.chord.quality ? `${s.chord.root}${s.chord.quality}` : s.chord.root)
       wrap(chords.join("  —  "), 12, "bold", 2)
+      if (section.lyrics.trim()) {
+        section.lyrics.split("\n").filter(l => l.trim()).forEach(line => {
+          if (y > 270) { doc.addPage(); y = 20 }
+          wrap(line, 10, "normal", 2)
+        })
+      }
       y += 3
     }
 
@@ -392,6 +399,7 @@ export default function ChordProgressionBuilder() {
                   onFocusSection={() => setActiveSectionId(section.id)}
                   onRemoveSection={() => removeSection(section.id)}
                   onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
+                  onLyricsChange={(lyrics) => updateSection(section.id, (s) => ({ ...s, lyrics }))}
                   canPaste={copiedSection !== null}
                   onCopySection={() => handleCopySection(section.id)}
                   onPasteSection={() => handlePasteSection(section.id)}

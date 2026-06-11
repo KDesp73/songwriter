@@ -13,6 +13,7 @@ export interface Section {
   name: string
   progression: ProgressionSlot[]
   tab: string
+  lyrics: string
 }
 
 export interface Song {

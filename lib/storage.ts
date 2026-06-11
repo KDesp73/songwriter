@@ -44,7 +44,12 @@ export function saveSong(song: Song) {
 export function loadSong(id: string): Song | null {
   try {
     const raw = localStorage.getItem(SONG_PREFIX + id)
-    return raw ? JSON.parse(raw) : null
+    if (!raw) return null
+    const song: Song = JSON.parse(raw)
+    for (const section of song.sections) {
+      if (!section.lyrics) section.lyrics = ""
+    }
+    return song
   } catch {
     return null
   }
@@ -69,6 +74,7 @@ export function createNewSong(title?: string): Song {
         id: crypto.randomUUID(),
         name: "Verse",
         progression: [],
+        lyrics: "",
         tab: `e|------------------------------------------------------------------|
 B|------------------------------------------------------------------|
 G|------------------------------------------------------------------|
@@ -80,6 +86,7 @@ E|------------------------------------------------------------------|`,
         id: crypto.randomUUID(),
         name: "Chorus",
         progression: [],
+        lyrics: "",
         tab: `e|------------------------------------------------------------------|
 B|------------------------------------------------------------------|
 G|------------------------------------------------------------------|

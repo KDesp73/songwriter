@@ -8,6 +8,7 @@ import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import ChordDiagram from "./ChordDiagram"
+import LyricsEditor from "./LyricsEditor"
 import TabEditor from "./TabEditor"
 import PlaybackButton from "./PlaybackButton"
 
@@ -24,6 +25,7 @@ interface SectionBlockProps {
   onFocusSection: () => void
   onRemoveSection: () => void
   onTabChange: (tab: string) => void
+  onLyricsChange: (lyrics: string) => void
   canPaste: boolean
   onCopySection: () => void
   onPasteSection: () => void
@@ -121,6 +123,7 @@ export default function SectionBlock({
   onFocusSection,
   onRemoveSection,
   onTabChange,
+  onLyricsChange,
   canPaste,
   onCopySection,
   onPasteSection,
@@ -229,6 +232,9 @@ export default function SectionBlock({
           Add
         </Button>
       </div>
+
+      {/* Lyrics */}
+      <LyricsEditor value={section.lyrics} onChange={onLyricsChange} />
 
       {/* Tab */}
       <TabEditor value={section.tab} onChange={onTabChange} />

@@ -221,24 +221,22 @@ export default function ChordProgressionBuilder() {
 
     if (shapes.length > 0) {
       doc.addPage()
-      y = 20
+      let curY = 20
       doc.setFont("helvetica", "bold")
       doc.setFontSize(14)
-      doc.text("Chord Diagrams", 10, y)
-      y += 10
+      doc.text("Chord Diagrams", 10, curY)
+      curY += 10
 
       const cols = 5
       const cellW = 38
-      const cellH = 30
+      const cellH = 52
       const sp = 6.5
       const fp = 8
+      let curCol = 0
 
-      for (let idx = 0; idx < shapes.length; idx++) {
-        const shape = shapes[idx]
-        const col = idx % cols
-        const row = Math.floor(idx / cols)
-        const cx = 10 + col * cellW + cellW / 2
-        const top = y + row * cellH
+      function drawDiagram(shape: typeof shapes[0]) {
+        const cx = 10 + curCol * cellW + cellW / 2
+        const top = curY
 
         doc.setFontSize(7)
         doc.setFont("helvetica", "bold")
@@ -287,6 +285,24 @@ export default function ChordProgressionBuilder() {
           }
         }
         doc.setTextColor(0)
+
+        curCol++
+        if (curCol >= cols) {
+          curCol = 0
+          curY += cellH
+        }
+      }
+
+      for (const shape of shapes) {
+        if (curCol === 0 && curY + cellH > 275) {
+          doc.addPage()
+          curY = 20
+          doc.setFont("helvetica", "bold")
+          doc.setFontSize(14)
+          doc.text("Chord Diagrams (cont.)", 10, curY)
+          curY += 10
+        }
+        drawDiagram(shape)
       }
     }
 

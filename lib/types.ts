@@ -24,11 +24,14 @@ export interface Song {
   key: string
   scale: "major" | "minor"
   tempo: number
+  timeSignature: { beats: number; noteValue: number }
   capoFret: number
   waveform: WaveformType
   sections: Section[]
   updatedAt: number
 }
+
+export const DEFAULT_TIME_SIGNATURE = { beats: 4, noteValue: 4 } as const
 
 export const TAB_TEMPLATE = `e|------------------------------------------------------------------|
 B|------------------------------------------------------------------|

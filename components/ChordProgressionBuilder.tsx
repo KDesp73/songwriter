@@ -189,7 +189,7 @@ export default function ChordProgressionBuilder() {
     }
 
     wrap(song.title, 22, "bold")
-    wrap(`Key: ${song.key} ${song.scale}  |  BPM: ${song.tempo}${song.capoFret > 0 ? `  |  Capo: Fret ${song.capoFret}` : ""}`, 10)
+    wrap(`Key: ${song.key} ${song.scale}  |  ${song.timeSignature.beats}/${song.timeSignature.noteValue}  |  BPM: ${song.tempo}${song.capoFret > 0 ? `  |  Capo: Fret ${song.capoFret}` : ""}`, 10)
     y += 4
 
     for (const section of song.sections) {
@@ -537,6 +537,28 @@ export default function ChordProgressionBuilder() {
                     {Array.from({ length: 13 }, (_, i) => (
                       <SelectItem key={i} value={String(i)}>
                         {i === 0 ? "Off" : `Fret ${i}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground">Time</label>
+                <Select
+                  value={`${song.timeSignature.beats}/${song.timeSignature.noteValue}`}
+                  onValueChange={(v) => {
+                    if (!v) return
+                    const [beats, noteValue] = v.split("/").map(Number)
+                    updateSong((s) => ({ ...s, timeSignature: { beats, noteValue } }))
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent sideOffset={4} align="start">
+                    {["2/4", "3/4", "4/4", "5/4", "6/8", "7/8", "9/8", "12/8"].map((ts) => (
+                      <SelectItem key={ts} value={ts}>
+                        {ts}
                       </SelectItem>
                     ))}
                   </SelectContent>

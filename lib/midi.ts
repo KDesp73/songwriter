@@ -49,6 +49,10 @@ export function generateMidi(song: Song): Uint8Array {
   const usPerQ = Math.round(60000000 / song.tempo)
   metaEvent(0, 0x51, [usPerQ >> 16, (usPerQ >> 8) & 0xff, usPerQ & 0xff])
 
+  // time signature: numerator, denominator (power of 2), clocks per tick, 32nd notes per quarter
+  const denomLog2 = Math.log2(song.timeSignature.noteValue)
+  metaEvent(0, 0x58, [song.timeSignature.beats, denomLog2, 24, 8])
+
   // track name
   const nameBytes = [...new TextEncoder().encode(song.title)]
   metaEvent(0, 0x03, nameBytes)

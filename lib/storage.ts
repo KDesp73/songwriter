@@ -1,4 +1,4 @@
-import { type Song } from "./types"
+import { type Song, DEFAULT_TIME_SIGNATURE } from "./types"
 
 const SONGS_INDEX = "songwriter:songs"
 const SONG_PREFIX = "songwriter:song:"
@@ -50,6 +50,7 @@ export function loadSong(id: string): Song | null {
       if (!section.lyrics) section.lyrics = ""
     }
     if (!song.waveform) song.waveform = "triangle"
+    if (!song.timeSignature) song.timeSignature = { ...DEFAULT_TIME_SIGNATURE }
     return song
   } catch {
     return null
@@ -69,6 +70,7 @@ export function createNewSong(title?: string): Song {
     key: "C",
     scale: "major",
     tempo: 120,
+    timeSignature: { ...DEFAULT_TIME_SIGNATURE },
     capoFret: 0,
     waveform: "triangle",
     sections: [
@@ -128,6 +130,7 @@ export function importCollection(json: string): { imported: number; errors: stri
         if (!section.lyrics) section.lyrics = ""
       }
       if (!song.waveform) song.waveform = "triangle"
+      if (!song.timeSignature) song.timeSignature = { ...DEFAULT_TIME_SIGNATURE }
       saveSong(song as Song)
       imported++
     }

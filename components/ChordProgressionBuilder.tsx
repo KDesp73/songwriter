@@ -159,6 +159,15 @@ export default function ChordProgressionBuilder() {
     }))
   }
 
+  function setChordQuality(sectionId: string, index: number, quality: string) {
+    updateSection(sectionId, (sec) => ({
+      ...sec,
+      progression: sec.progression.map((slot, i) =>
+        i === index ? { ...slot, chord: { ...slot.chord, quality } } : slot
+      ),
+    }))
+  }
+
   function reorderChordInSection(sectionId: string, fromIndex: number, toIndex: number) {
     updateSection(sectionId, (sec) => {
       const p = [...sec.progression]
@@ -684,6 +693,7 @@ export default function ChordProgressionBuilder() {
                   onAddChord={(chord) => addChordToSection(section.id, chord)}
                   onInsertChordAfter={(index, chord) => insertChordAfterSection(section.id, index, chord)}
                   onBeatsChange={(index, beats) => setChordBeats(section.id, index, beats)}
+                  onQualityChange={(index, quality) => setChordQuality(section.id, index, quality)}
                   canPaste={copiedSection !== null}
                   onCopySection={() => handleCopySection(section.id)}
                   onPasteSection={() => handlePasteSection(section.id)}

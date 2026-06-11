@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords, getChordRecommendations, gradeProgression } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords, getChordRecommendations, gradeProgression, ALL_QUALITIES } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,7 @@ interface SectionBlockProps {
   onAddChord: (chord: { root: string; quality: string }) => void
   onInsertChordAfter?: (index: number, chord: { root: string; quality: string }) => void
   onBeatsChange?: (index: number, beats: number) => void
+  onQualityChange?: (index: number, quality: string) => void
   canPaste: boolean
   onCopySection: () => void
   onPasteSection: () => void
@@ -134,6 +135,7 @@ export default function SectionBlock({
   onAddChord,
   onInsertChordAfter,
   onBeatsChange,
+  onQualityChange,
   canPaste,
   onCopySection,
   onPasteSection,
@@ -176,27 +178,12 @@ export default function SectionBlock({
         />
         {section.progression.length > 0 && (() => {
           const pg = gradeProgression(section.progression, songKey, songScale)
-          const gradeColors: Record<string, string> = {
-            A: "bg-green-500/15 text-green-400 border-green-500/25",
-            B: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
-            C: "bg-amber-500/15 text-amber-400 border-amber-500/25",
-            D: "bg-orange-500/15 text-orange-400 border-orange-500/25",
-            F: "bg-red-500/15 text-red-400 border-red-500/25",
-          }
           return (
-            <span
-              title={pg.details.join(" • ")}
-              className={`ml-2 shrink-0 rounded-md border px-1.5 py-0.5 text-[11px] font-semibold tracking-wide ${gradeColors[pg.grade] ?? "bg-muted text-muted-foreground"}`}
-            >
-              {pg.grade}
+            <span className="ml-auto hidden text-sm text-muted-foreground sm:inline" title={pg.details.join(" • ")}>
+              {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}
             </span>
           )
         })()}
-        {section.progression.length > 0 && (
-          <span className="ml-auto hidden text-sm text-muted-foreground sm:inline">
-            {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}
-          </span>
-        )}
         <button
           onClick={(e) => { e.stopPropagation(); onCopySection() }}
           className="flex size-5 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:text-foreground"
@@ -256,6 +243,14 @@ export default function SectionBlock({
                 e.preventDefault()
                 e.stopPropagation()
                 setCtxMenu({ index: i, top: e.clientY, left: e.clientX })
+              }}
+              onWheel={(e) => {
+                e.preventDefault()
+                const curIdx = ALL_QUALITIES.indexOf(slot.chord.quality as typeof ALL_QUALITIES[number])
+                if (curIdx === -1) return
+                const dir = e.deltaY > 0 ? 1 : -1
+                const next = (curIdx + dir + ALL_QUALITIES.length) % ALL_QUALITIES.length
+                onQualityChange?.(i, ALL_QUALITIES[next])
               }}
               className={`flex flex-col items-center gap-0.5 rounded-md px-1 transition-all ${
                 dragOverIndex === i ? "pt-4" : ""

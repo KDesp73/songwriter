@@ -501,7 +501,7 @@ export default function ChordProgressionBuilder() {
             })()}
 
             {/* BPM & Capo */}
-            <div className="flex gap-4">
+            <div className="space-y-2">
               <div className="flex flex-1 items-center gap-2">
                 <label className="text-sm font-medium text-muted-foreground">BPM</label>
                 <Input
@@ -530,10 +530,10 @@ export default function ChordProgressionBuilder() {
                   value={String(song.capoFret)}
                   onValueChange={(v) => setCapo(Number(v))}
                 >
-                  <SelectTrigger className="h-9 w-22">
+                  <SelectTrigger className="h-9 w-24">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent sideOffset={4} align="start" className="max-h-60">
                     {Array.from({ length: 13 }, (_, i) => (
                       <SelectItem key={i} value={String(i)}>
                         {i === 0 ? "Off" : `Fret ${i}`}

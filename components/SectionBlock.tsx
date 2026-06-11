@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords, getChordRecommendations } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords, getChordRecommendations, gradeProgression } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -172,6 +172,24 @@ export default function SectionBlock({
           className="h-auto border-none bg-transparent p-0 text-base font-semibold tracking-tight shadow-none focus-visible:ring-0"
           placeholder="Section name"
         />
+        {section.progression.length > 0 && (() => {
+          const pg = gradeProgression(section.progression, songKey, songScale)
+          const gradeColors: Record<string, string> = {
+            A: "bg-green-500/15 text-green-400 border-green-500/25",
+            B: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
+            C: "bg-amber-500/15 text-amber-400 border-amber-500/25",
+            D: "bg-orange-500/15 text-orange-400 border-orange-500/25",
+            F: "bg-red-500/15 text-red-400 border-red-500/25",
+          }
+          return (
+            <span
+              title={pg.details.join(" • ")}
+              className={`ml-2 shrink-0 rounded-md border px-1.5 py-0.5 text-[11px] font-semibold tracking-wide ${gradeColors[pg.grade] ?? "bg-muted text-muted-foreground"}`}
+            >
+              {pg.grade}
+            </span>
+          )
+        })()}
         {section.progression.length > 0 && (
           <span className="ml-auto hidden text-sm text-muted-foreground sm:inline">
             {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}

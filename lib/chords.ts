@@ -252,6 +252,84 @@ const NEXT_CHORDS: Record<string, { roman: string; label: string }[]> = {
   "VII":  [{ roman: "i", label: "Tonic" }, { roman: "III", label: "Mediant" }],
 }
 
+export interface ProgressionGrade {
+  grade: string
+  label: string
+  details: string[]
+}
+
+export function gradeProgression(
+  progression: { chord: { root: string; quality: string } }[],
+  key: string,
+  scale: "major" | "minor",
+): ProgressionGrade {
+  const details: string[] = []
+
+  if (progression.length === 0) {
+    return { grade: "—", label: "Empty", details: [] }
+  }
+  if (progression.length === 1) {
+    return { grade: "C", label: "Needs more chords", details: ["Only one chord"] }
+  }
+
+  let score = 0
+  let total = 0
+
+  const first = analyzeChord(progression[0].chord, key, scale)
+  if (first.romanNumeral === "I" || first.romanNumeral === "i") {
+    score += 1; details.push("Opens on tonic")
+  }
+  total += 1
+
+  for (let i = 0; i < progression.length - 1; i++) {
+    const from = progression[i].chord
+    const to = progression[i + 1].chord
+    const fa = analyzeChord(from, key, scale)
+    const ta = analyzeChord(to, key, scale)
+
+    if (!fa.isDiatonic) {
+      score -= 1; details.push(`Non-diatonic: ${formatChord(from.root, from.quality)}`)
+    }
+
+    const f = fa.romanNumeral
+    const t = ta.romanNumeral
+
+    if ((f === "V" || f === "v") && (t === "I" || t === "i")) {
+      score += 2; details.push("Authentic cadence (V→I)");
+    } else if ((f === "ii" || f === "ii°") && (t === "V" || t === "v")) {
+      score += 1; details.push("ii→V setup");
+    } else if ((f === "IV" || f === "iv") && (t === "I" || t === "i")) {
+      score += 1; details.push("Plagal cadence (IV→I)");
+    } else if ((f === "V" || f === "v") && (t === "vi" || t === "VI")) {
+      score += 1; details.push("Deceptive cadence (V→vi)");
+    } else {
+      const diff = ((semitoneOf(to.root) - semitoneOf(from.root)) % 12 + 12) % 12
+      if (diff === 5 || diff === 7) {
+        score += 1; details.push("Circle of fifths");
+      } else if (fa.isDiatonic && ta.isDiatonic) {
+        details.push("Functional transition");
+      }
+    }
+    total += 2
+  }
+
+  const last = analyzeChord(progression[progression.length - 1].chord, key, scale)
+  if ((last.romanNumeral === "I" || last.romanNumeral === "i") && progression.length > 1) {
+    score += 1; details.push("Resolves to tonic")
+  }
+  total += 1
+
+  const pct = total > 0 ? score / total : 0
+  let grade: string, label: string
+  if (pct >= 0.7) { grade = "A"; label = "Strong" }
+  else if (pct >= 0.5) { grade = "B"; label = "Solid" }
+  else if (pct >= 0.3) { grade = "C"; label = "Decent" }
+  else if (pct >= 0.1) { grade = "D"; label = "Weak" }
+  else { grade = "F"; label = "Unconventional" }
+
+  return { grade, label, details }
+}
+
 export function getChordRecommendations(
   chord: { root: string; quality: string },
   key: string,

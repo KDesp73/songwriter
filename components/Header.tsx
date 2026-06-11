@@ -10,9 +10,10 @@ interface HeaderProps {
   waveform: "triangle" | "sine" | "square" | "sawtooth"
   onWaveformChange: (w: "triangle" | "sine" | "square" | "sawtooth") => void
   onExport: () => void
+  onExportMidi: () => void
 }
 
-export default function Header({ metronome, onMetronomeChange, waveform, onWaveformChange, onExport }: HeaderProps) {
+export default function Header({ metronome, onMetronomeChange, waveform, onWaveformChange, onExport, onExportMidi }: HeaderProps) {
   const [showScales, setShowScales] = useState(false)
 
   return (
@@ -68,6 +69,17 @@ export default function Header({ metronome, onMetronomeChange, waveform, onWavef
               <path d="M2 9V11.5C2 12.05 2.45 12.5 3 12.5H11C11.55 12.5 12 12.05 12 11.5V9" stroke="currentColor" strokeWidth="1.2" fill="none" />
             </svg>
             PDF
+          </button>
+          <button
+            onClick={onExportMidi}
+            className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Download MIDI"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+              <path d="M5 5V9M7 5V9M9 5V9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+            MIDI
           </button>
           <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="h-7 gap-1.5 rounded-lg text-xs">
             <span className="inline-block size-2 rounded-full bg-primary" />

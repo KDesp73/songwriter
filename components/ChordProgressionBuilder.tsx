@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { type Section, type ProgressionSlot } from "@/lib/types"
 import { transposeChord, transposeNote, getRelativeKey, getModalInterchangeChords, chordBadgeColor, formatChord } from "@/lib/chords"
 import { loadSong } from "@/lib/storage"
+import { downloadMidi } from "@/lib/midi"
 import { usePersistedSong } from "@/hooks/usePersistedSong"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -202,6 +203,10 @@ export default function ChordProgressionBuilder() {
     doc.save(`${song.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`)
   }
 
+  function handleExportMidi() {
+    downloadMidi(song)
+  }
+
   const [copiedSection, setCopiedSection] = useState<Section | null>(null)
 
   function handleCopySection(sectionId: string) {
@@ -227,7 +232,7 @@ export default function ChordProgressionBuilder() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <Header metronome={metronome} onMetronomeChange={setMetronome} waveform={song.waveform} onWaveformChange={(w) => updateSong((s) => ({ ...s, waveform: w }))} onExport={handleExport} />
+      <Header metronome={metronome} onMetronomeChange={setMetronome} waveform={song.waveform} onWaveformChange={(w) => updateSong((s) => ({ ...s, waveform: w }))} onExport={handleExport} onExportMidi={handleExportMidi} />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">

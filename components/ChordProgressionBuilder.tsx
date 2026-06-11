@@ -124,7 +124,7 @@ export default function ChordProgressionBuilder() {
   function addChordToSection(sectionId: string, chord: { root: string; quality: string }) {
     const slot: ProgressionSlot = {
       chord: { root: chord.root, quality: chord.quality },
-      beats: 4,
+      beats: song.timeSignature.beats,
     }
     updateSection(sectionId, (sec) => ({
       ...sec,
@@ -135,7 +135,7 @@ export default function ChordProgressionBuilder() {
   function insertChordAfterSection(sectionId: string, index: number, chord: { root: string; quality: string }) {
     const slot: ProgressionSlot = {
       chord: { root: chord.root, quality: chord.quality },
-      beats: 4,
+      beats: song.timeSignature.beats,
     }
     updateSection(sectionId, (sec) => ({
       ...sec,

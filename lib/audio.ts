@@ -11,6 +11,15 @@ export class AudioEngine {
   private ctx: AudioContext | null = null
   private stopped = false
 
+  private static instance: AudioEngine | null = null
+
+  static getInstance(): AudioEngine {
+    if (!AudioEngine.instance) {
+      AudioEngine.instance = new AudioEngine()
+    }
+    return AudioEngine.instance
+  }
+
   private getCtx(): AudioContext {
     if (!this.ctx) {
       this.ctx = new AudioContext()
@@ -74,6 +83,7 @@ export class AudioEngine {
     waveform: WaveformType = "triangle",
     beatsPerMeasure = 4,
   ): Promise<void> {
+    this.stop()
     this.stopped = false
     const ctx = this.getCtx()
     const beatMs = 60 / bpm

@@ -48,6 +48,14 @@ export const CHORD_QUALITIES: Record<string, { intervals: number[]; label: strin
 
 export type QualityKey = keyof typeof CHORD_QUALITIES
 
+export const QUALITY_GROUPS: { label: string; qualities: QualityKey[] }[] = [
+  { label: "Triads", qualities: ["", "m", "dim", "aug"] },
+  { label: "Sevenths", qualities: ["7", "maj7", "m7", "dim7", "m7b5"] },
+  { label: "Sixths", qualities: ["6", "m6"] },
+  { label: "Ninths", qualities: ["9", "add9"] },
+  { label: "Sus", qualities: ["sus2", "sus4"] },
+]
+
 export const SCALE_PATTERNS: Record<string, number[]> = {
   major:       [0, 2, 4, 5, 7, 9, 11],
   "natural minor": [0, 2, 3, 5, 7, 8, 10],

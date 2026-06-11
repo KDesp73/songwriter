@@ -17,10 +17,12 @@ import {
 } from "@/components/ui/card"
 import ChordDiagram from "./ChordDiagram"
 import TabEditor from "./TabEditor"
+import PlaybackButton from "./PlaybackButton"
 
 interface SectionBlockProps {
   section: Section
   capoFret: number
+  bpm: number
   onUpdateName: (name: string) => void
   onRemoveChord: (index: number) => void
   onFocusSection: () => void
@@ -31,13 +33,15 @@ interface SectionBlockProps {
 function ChordBadge({
   chord,
   capoFret,
+  isPlaying,
   onRemove,
 }: {
   chord: { root: string; quality: string }
   capoFret: number
+  isPlaying: boolean
   onRemove: () => void
 }) {
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null)
+  const [tooltip, setTooltip] = useState<{ top: number; left: number } | null>(null)
   const ref = useRef<HTMLSpanElement>(null)
   const chordName = formatChord(chord.root, chord.quality)
   const info = capoFret > 0 ? capoInfo(chord, capoFret) : null
@@ -45,19 +49,24 @@ function ChordBadge({
 
   function show() {
     if (ref.current) {
-      const rect = ref.current.getBoundingClientRect()
-      setTooltipPos({ top: rect.top - 8, left: rect.left + rect.width / 2 })
+      const r = ref.current.getBoundingClientRect()
+      setTooltip({ top: r.top - 8, left: r.left + r.width / 2 })
     }
   }
 
   function hide() {
-    setTooltipPos(null)
+    setTooltip(null)
   }
 
   return (
     <span className="relative inline-flex">
       <span ref={ref} onMouseEnter={show} onMouseLeave={hide}>
-        <Badge variant="outline" className="gap-2 py-1.5 pl-3 pr-1.5 text-sm">
+        <Badge
+          variant={isPlaying ? "default" : "outline"}
+          className={`gap-2 py-1.5 pl-3 pr-1.5 text-sm transition-all ${
+            isPlaying ? "scale-110 shadow-md" : ""
+          }`}
+        >
           {info ? (
             <span title={`Shape: ${info.shape} → Sounds: ${info.actual}`}>
               {info.shape}
@@ -81,12 +90,12 @@ function ChordBadge({
         </Badge>
       </span>
 
-      {tooltipPos && shape && createPortal(
+      {tooltip && shape && createPortal(
         <div
           style={{
             position: "fixed",
-            top: tooltipPos.top,
-            left: tooltipPos.left,
+            top: tooltip.top,
+            left: tooltip.left,
             transform: "translate(-50%, -100%)",
           }}
           className="z-50 rounded-xl border bg-popover p-2 shadow-md ring-1 ring-foreground/10"
@@ -104,16 +113,24 @@ function ChordBadge({
 export default function SectionBlock({
   section,
   capoFret,
+  bpm,
   onUpdateName,
   onRemoveChord,
   onFocusSection,
   onRemoveSection,
   onTabChange,
 }: SectionBlockProps) {
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null)
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
+          <PlaybackButton
+            progression={section.progression}
+            bpm={bpm}
+            onChordChange={setPlayingIndex}
+          />
           <Input
             type="text"
             value={section.name}
@@ -150,6 +167,7 @@ export default function SectionBlock({
               key={i}
               chord={slot.chord}
               capoFret={capoFret}
+              isPlaying={playingIndex === i}
               onRemove={() => onRemoveChord(i)}
             />
           ))}

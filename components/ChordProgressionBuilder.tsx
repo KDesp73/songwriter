@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { type Song, type Section, type ProgressionSlot, TAB_TEMPLATE } from "@/lib/types"
-import { type DiatonicChord, transposeChord, transposeNote } from "@/lib/chords"
+import { transposeChord, transposeNote } from "@/lib/chords"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -82,7 +82,7 @@ export default function ChordProgressionBuilder() {
     setActiveSectionId(remaining[nextIdx]?.id ?? "")
   }
 
-  function addChordToActiveSection(chord: DiatonicChord) {
+  function addChordToActiveSection(chord: { root: string; quality: string }) {
     if (!activeSectionId) return
     const slot: ProgressionSlot = {
       chord: { root: chord.root, quality: chord.quality },
@@ -204,6 +204,7 @@ export default function ChordProgressionBuilder() {
             <SectionBlock
               section={section}
               capoFret={song.capoFret}
+              bpm={song.tempo}
               onUpdateName={(name) => updateSection(section.id, (s) => ({ ...s, name }))}
               onRemoveChord={(index) => removeChordFromSection(section.id, index)}
               onFocusSection={() => setActiveSectionId(section.id)}

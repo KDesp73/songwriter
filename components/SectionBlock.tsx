@@ -16,6 +16,7 @@ interface SectionBlockProps {
   section: Section
   capoFret: number
   bpm: number
+  beatsPerMeasure?: number
   metronome?: boolean
   waveform?: "triangle" | "sine" | "square" | "sawtooth"
   songKey: string
@@ -116,6 +117,7 @@ export default function SectionBlock({
   section,
   capoFret,
   bpm,
+  beatsPerMeasure = 4,
   metronome,
   waveform,
   songKey,
@@ -158,6 +160,7 @@ export default function SectionBlock({
           metronome={metronome}
           waveform={waveform}
           onChordChange={setPlayingIndex}
+          beatsPerMeasure={beatsPerMeasure}
         />
         <Input
           type="text"

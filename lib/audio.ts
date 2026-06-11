@@ -72,11 +72,13 @@ export class AudioEngine {
     onChordChange?: (index: number | null) => void,
     metronome = false,
     waveform: WaveformType = "triangle",
+    beatsPerMeasure = 4,
   ): Promise<void> {
     this.stopped = false
     const ctx = this.getCtx()
     const beatMs = 60 / bpm
     let t = ctx.currentTime + 0.15
+    let beatCount = 0
 
     onChordChange?.(null)
 
@@ -91,8 +93,12 @@ export class AudioEngine {
 
       if (metronome) {
         for (let b = 0; b < slot.beats; b++) {
-          this.scheduleClick(t + b * beatMs, b === 0)
+          const isDownbeat = beatCount % beatsPerMeasure === 0
+          this.scheduleClick(t + b * beatMs, isDownbeat)
+          beatCount++
         }
+      } else {
+        beatCount += slot.beats
       }
 
       onChordChange?.(i)

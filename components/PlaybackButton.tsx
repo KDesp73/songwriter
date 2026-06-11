@@ -11,9 +11,10 @@ interface PlaybackButtonProps {
   metronome?: boolean
   waveform?: "triangle" | "sine" | "square" | "sawtooth"
   onChordChange?: (index: number | null) => void
+  beatsPerMeasure?: number
 }
 
-export default function PlaybackButton({ progression, bpm, metronome, waveform, onChordChange }: PlaybackButtonProps) {
+export default function PlaybackButton({ progression, bpm, metronome, waveform, onChordChange, beatsPerMeasure = 4 }: PlaybackButtonProps) {
   const [playing, setPlaying] = useState(false)
   const engineRef = useRef<AudioEngine | null>(null)
 
@@ -39,7 +40,7 @@ export default function PlaybackButton({ progression, bpm, metronome, waveform, 
       await getEngine().playProgression(progression, bpm, (i) => {
         onChordChange?.(i)
         if (i === null) setPlaying(false)
-      }, metronome, waveform)
+      }, metronome, waveform, beatsPerMeasure)
     } finally {
       setPlaying(false)
     }

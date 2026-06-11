@@ -653,6 +653,7 @@ export default function ChordProgressionBuilder() {
                   section={section}
                   capoFret={song.capoFret}
                   bpm={song.tempo}
+                  beatsPerMeasure={song.timeSignature.beats}
                   onUpdateName={(name) => updateSection(section.id, (s) => ({ ...s, name }))}
                   onRemoveChord={(index) => removeChordFromSection(section.id, index)}
                   onReorderChord={(from, to) => reorderChordInSection(section.id, from, to)}

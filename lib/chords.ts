@@ -148,6 +148,58 @@ export function transposeChord(chord: { root: string; quality: string }, semiton
   }
 }
 
+const FUNCTION_LABELS: Record<string, { major: string; minor: string }> = {
+  "I":    { major: "Tonic", minor: "Tonic" },
+  "ii":   { major: "Supertonic", minor: "" },
+  "iii":  { major: "Mediant", minor: "" },
+  "IV":   { major: "Subdominant", minor: "" },
+  "V":    { major: "Dominant", minor: "Dominant" },
+  "vi":   { major: "Submediant", minor: "" },
+  "vii°": { major: "Leading Tone", minor: "" },
+  "i":    { major: "", minor: "Tonic" },
+  "ii°":  { major: "", minor: "Supertonic" },
+  "III":  { major: "", minor: "Mediant" },
+  "iv":   { major: "", minor: "Subdominant" },
+  "v":    { major: "", minor: "Dominant" },
+  "VI":   { major: "", minor: "Submediant" },
+  "VII":  { major: "", minor: "Subtonic" },
+}
+
+export interface ChordAnalysis {
+  romanNumeral: string
+  function: string
+  isDiatonic: boolean
+}
+
+export function analyzeChord(
+  chord: { root: string; quality: string },
+  key: string,
+  scale: "major" | "minor",
+): ChordAnalysis {
+  const diatonics = getDiatonicChords(key, scale)
+  const match = diatonics.find(
+    (d) => d.root === chord.root && d.quality === chord.quality,
+  )
+  if (match) {
+    const fn = FUNCTION_LABELS[match.romanNumeral]
+    return {
+      romanNumeral: match.romanNumeral,
+      function: fn ? fn[scale] : "",
+      isDiatonic: true,
+    }
+  }
+  const rootMatch = diatonics.find((d) => d.root === chord.root)
+  if (rootMatch) {
+    const fn = FUNCTION_LABELS[rootMatch.romanNumeral]
+    return {
+      romanNumeral: rootMatch.romanNumeral,
+      function: fn ? fn[scale] : "",
+      isDiatonic: false,
+    }
+  }
+  return { romanNumeral: "?", function: "Chromatic", isDiatonic: false }
+}
+
 export function capoInfo(chord: { root: string; quality: string }, capoFret: number): {
   shape: string
   actual: string

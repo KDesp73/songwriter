@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 interface PlaybackButtonProps {
   progression: ProgressionSlot[]
   bpm: number
+  metronome?: boolean
   onChordChange?: (index: number | null) => void
 }
 
-export default function PlaybackButton({ progression, bpm, onChordChange }: PlaybackButtonProps) {
+export default function PlaybackButton({ progression, bpm, metronome, onChordChange }: PlaybackButtonProps) {
   const [playing, setPlaying] = useState(false)
   const engineRef = useRef<AudioEngine | null>(null)
 
@@ -37,7 +38,7 @@ export default function PlaybackButton({ progression, bpm, onChordChange }: Play
       await getEngine().playProgression(progression, bpm, (i) => {
         onChordChange?.(i)
         if (i === null) setPlaying(false)
-      })
+      }, metronome)
     } finally {
       setPlaying(false)
     }

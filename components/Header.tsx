@@ -4,7 +4,12 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import ScaleExplorer from "./ScaleExplorer"
 
-export default function Header() {
+interface HeaderProps {
+  metronome: boolean
+  onMetronomeChange: (on: boolean) => void
+}
+
+export default function Header({ metronome, onMetronomeChange }: HeaderProps) {
   const [showScales, setShowScales] = useState(false)
 
   return (
@@ -22,10 +27,28 @@ export default function Header() {
             Chord Progression Builder
           </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="gap-2 rounded-lg">
-          <span className="inline-block size-2 rounded-full bg-primary" />
-          Scales
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onMetronomeChange(!metronome)}
+            className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
+              metronome
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+            title="Toggle metronome"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="8" width="2" height="5" rx="0.5" fill="currentColor" />
+              <rect x="6" y="5" width="2" height="8" rx="0.5" fill="currentColor" />
+              <rect x="10" y="2" width="2" height="11" rx="0.5" fill="currentColor" />
+            </svg>
+            Click
+          </button>
+          <Button variant="ghost" size="sm" onClick={() => setShowScales(true)} className="h-7 gap-1.5 rounded-lg text-xs">
+            <span className="inline-block size-2 rounded-full bg-primary" />
+            Scales
+          </Button>
+        </div>
       </header>
       <ScaleExplorer open={showScales} onOpenChange={setShowScales} />
     </>

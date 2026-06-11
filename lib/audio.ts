@@ -47,10 +47,30 @@ export class AudioEngine {
     })
   }
 
+  private scheduleClick(time: number, accent: boolean) {
+    const ctx = this.getCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = "sine"
+    osc.frequency.value = accent ? 1200 : 800
+
+    gain.gain.setValueAtTime(0, time)
+    gain.gain.linearRampToValueAtTime(accent ? 0.25 : 0.15, time + 0.002)
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(time)
+    osc.stop(time + 0.04)
+  }
+
   async playProgression(
     progression: ProgressionSlot[],
     bpm: number,
     onChordChange?: (index: number | null) => void,
+    metronome = false,
   ): Promise<void> {
     this.stopped = false
     const ctx = this.getCtx()
@@ -67,6 +87,12 @@ export class AudioEngine {
       const intervals = getChordNotes(slot.chord.root, slot.chord.quality as QualityKey)
 
       this.playChordNotes(intervals, t, duration)
+
+      if (metronome) {
+        for (let b = 0; b < slot.beats; b++) {
+          this.scheduleClick(t + b * beatMs, b === 0)
+        }
+      }
 
       onChordChange?.(i)
       await sleep(duration * 1000)

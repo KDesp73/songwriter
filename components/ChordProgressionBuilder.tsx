@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { type Section, type ProgressionSlot } from "@/lib/types"
 import { transposeChord, transposeNote } from "@/lib/chords"
 import { loadSong } from "@/lib/storage"
@@ -37,6 +37,24 @@ export default function ChordProgressionBuilder() {
   const { song, updateSong, savedSongs, switchSong, newSong, deleteCurrentSong } = usePersistedSong()
   const [activeSectionId, setActiveSectionId] = useState<string>(song.sections[0]?.id ?? "")
   const [showSongList, setShowSongList] = useState(false)
+  const [metronome, setMetronome] = useState(false)
+  const tapTimes = useRef<number[]>([])
+
+  function handleTapTempo() {
+    const now = performance.now()
+    tapTimes.current = [...tapTimes.current.filter((t) => now - t < 3000), now]
+    if (tapTimes.current.length >= 4) {
+      const intervals: number[] = []
+      for (let i = 1; i < tapTimes.current.length; i++) {
+        intervals.push(tapTimes.current[i] - tapTimes.current[i - 1])
+      }
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length
+      const bpm = Math.round(60000 / avg)
+      if (bpm >= 20 && bpm <= 300) {
+        updateSong((s) => ({ ...s, tempo: bpm }))
+      }
+    }
+  }
 
   const activeSection = song.sections.find((s) => s.id === activeSectionId)
 
@@ -95,6 +113,15 @@ export default function ChordProgressionBuilder() {
     }))
   }
 
+  function reorderChordInSection(sectionId: string, fromIndex: number, toIndex: number) {
+    updateSection(sectionId, (sec) => {
+      const p = [...sec.progression]
+      const [moved] = p.splice(fromIndex, 1)
+      p.splice(toIndex, 0, moved)
+      return { ...sec, progression: p }
+    })
+  }
+
   function transposeSong(semitones: number) {
     updateSong((prev) => ({
       ...prev,
@@ -123,9 +150,32 @@ export default function ChordProgressionBuilder() {
     updateSong((s) => ({ ...s, capoFret: fret }))
   }
 
+  const [copiedSection, setCopiedSection] = useState<Section | null>(null)
+
+  function handleCopySection(sectionId: string) {
+    const section = song.sections.find((s) => s.id === sectionId)
+    if (section) setCopiedSection(structuredClone(section))
+  }
+
+  function handlePasteSection(sectionId: string) {
+    if (!copiedSection) return
+    const idx = song.sections.findIndex((s) => s.id === sectionId)
+    const pasted: Section = {
+      ...structuredClone(copiedSection),
+      id: crypto.randomUUID(),
+      name: copiedSection.name + " (copy)",
+    }
+    updateSong((prev) => {
+      const sections = [...prev.sections]
+      sections.splice(idx + 1, 0, pasted)
+      return { ...prev, sections }
+    })
+    setActiveSectionId(pasted.id)
+  }
+
   return (
     <div className="flex h-dvh flex-col">
-      <Header />
+      <Header metronome={metronome} onMetronomeChange={setMetronome} />
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">
@@ -214,7 +264,7 @@ export default function ChordProgressionBuilder() {
 
             {/* BPM & Capo */}
             <div className="flex gap-4">
-              <div className="flex flex-1 items-center gap-3">
+              <div className="flex flex-1 items-center gap-2">
                 <label className="text-sm font-medium text-muted-foreground">BPM</label>
                 <Input
                   type="number"
@@ -222,8 +272,19 @@ export default function ChordProgressionBuilder() {
                   max={300}
                   value={song.tempo}
                   onChange={(e) => updateSong((s) => ({ ...s, tempo: Number(e.target.value) }))}
-                  className="h-9 flex-1"
+                  className="h-9 w-16"
                 />
+                <button
+                  onClick={handleTapTempo}
+                  className="flex h-9 items-center gap-1 rounded-lg border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95"
+                  title="Tap to set tempo"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+                    <path d="M7 4V7.5L9 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                  </svg>
+                  Tap
+                </button>
               </div>
               <div className="flex items-center gap-3">
                 <label className="text-sm font-medium text-muted-foreground">Capo</label>
@@ -293,9 +354,16 @@ export default function ChordProgressionBuilder() {
                   bpm={song.tempo}
                   onUpdateName={(name) => updateSection(section.id, (s) => ({ ...s, name }))}
                   onRemoveChord={(index) => removeChordFromSection(section.id, index)}
+                  onReorderChord={(from, to) => reorderChordInSection(section.id, from, to)}
                   onFocusSection={() => setActiveSectionId(section.id)}
                   onRemoveSection={() => removeSection(section.id)}
                   onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
+                  canPaste={copiedSection !== null}
+                  onCopySection={() => handleCopySection(section.id)}
+                  onPasteSection={() => handlePasteSection(section.id)}
+                  metronome={metronome}
+                  songKey={song.key}
+                  songScale={song.scale}
                 />
               </div>
             ))}

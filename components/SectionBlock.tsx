@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo, chordBadgeColor } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor, analyzeChord } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -15,11 +15,18 @@ interface SectionBlockProps {
   section: Section
   capoFret: number
   bpm: number
+  metronome?: boolean
+  songKey: string
+  songScale: "major" | "minor"
   onUpdateName: (name: string) => void
   onRemoveChord: (index: number) => void
+  onReorderChord: (fromIndex: number, toIndex: number) => void
   onFocusSection: () => void
   onRemoveSection: () => void
   onTabChange: (tab: string) => void
+  canPaste: boolean
+  onCopySection: () => void
+  onPasteSection: () => void
 }
 
 function ChordBadge({
@@ -105,13 +112,22 @@ export default function SectionBlock({
   section,
   capoFret,
   bpm,
+  metronome,
+  songKey,
+  songScale,
   onUpdateName,
   onRemoveChord,
+  onReorderChord,
   onFocusSection,
   onRemoveSection,
   onTabChange,
+  canPaste,
+  onCopySection,
+  onPasteSection,
 }: SectionBlockProps) {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const dragIndex = useRef<number | null>(null)
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -120,6 +136,7 @@ export default function SectionBlock({
         <PlaybackButton
           progression={section.progression}
           bpm={bpm}
+          metronome={metronome}
           onChordChange={setPlayingIndex}
         />
         <Input
@@ -133,6 +150,28 @@ export default function SectionBlock({
           <span className="ml-auto text-sm text-muted-foreground">
             {section.progression.length} chord{section.progression.length !== 1 ? "s" : ""}
           </span>
+        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); onCopySection() }}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:text-foreground"
+          aria-label="Copy section"
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="2.5" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.1" fill="none" />
+            <path d="M2 5.5V10.5C2 11.05 2.45 11.5 3 11.5H8" stroke="currentColor" strokeWidth="1.1" fill="none" />
+          </svg>
+        </button>
+        {canPaste && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPasteSection() }}
+            className="flex size-5 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:text-foreground"
+            aria-label="Paste after section"
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <rect x="3.5" y="2.5" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.1" fill="none" />
+              <path d="M5.5 6.5H8.5M7 5V8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+            </svg>
+          </button>
         )}
         <button
           onClick={(e) => {
@@ -149,16 +188,40 @@ export default function SectionBlock({
       </div>
 
       {/* Chord row */}
-      <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
-        {section.progression.map((slot, i) => (
-          <ChordBadge
-            key={i}
-            chord={slot.chord}
-            capoFret={capoFret}
-            isPlaying={playingIndex === i}
-            onRemove={() => onRemoveChord(i)}
-          />
-        ))}
+      <div className="flex flex-wrap items-start gap-2 px-4 py-3">
+        {section.progression.map((slot, i) => {
+          const analysis = analyzeChord(slot.chord, songKey, songScale)
+          return (
+            <div
+              key={i}
+              draggable
+              onDragStart={() => { dragIndex.current = i }}
+              onDragOver={(e) => { e.preventDefault(); setDragOverIndex(i) }}
+              onDragLeave={() => setDragOverIndex(null)}
+              onDrop={() => {
+                if (dragIndex.current !== null && dragIndex.current !== i) {
+                  onReorderChord(dragIndex.current, i)
+                }
+                setDragOverIndex(null)
+                dragIndex.current = null
+              }}
+              onDragEnd={() => { setDragOverIndex(null); dragIndex.current = null }}
+              className={`flex flex-col items-center gap-0.5 rounded-md px-1 transition-all ${
+                dragOverIndex === i ? "pt-4" : ""
+              }`}
+            >
+              <ChordBadge
+                chord={slot.chord}
+                capoFret={capoFret}
+                isPlaying={playingIndex === i}
+                onRemove={() => onRemoveChord(i)}
+              />
+              <span className={`text-[10px] leading-none ${analysis.isDiatonic ? "text-muted-foreground/60" : "text-amber-400/60"}`}>
+                {analysis.function || analysis.romanNumeral}
+              </span>
+            </div>
+          )
+        })}
         <Button variant="outline" size="sm" onClick={onFocusSection} className="h-7 gap-1 rounded-md text-xs font-medium">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />

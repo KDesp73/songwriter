@@ -124,6 +124,14 @@ export class AudioEngine {
   stop() {
     this.stopped = true
   }
+
+  playChord(root: string, quality: string, waveform: WaveformType = "triangle") {
+    const ctx = this.getCtx()
+    const t = ctx.currentTime + 0.02
+    const intervals = getChordNotes(root, quality as QualityKey)
+    const duration = 1.2
+    this.playChordNotes(intervals, t, duration, waveform)
+  }
 }
 
 function sleep(ms: number): Promise<void> {

@@ -11,6 +11,7 @@ import ChordDiagram from "./ChordDiagram"
 import LyricsEditor from "./LyricsEditor"
 import TabEditor from "./TabEditor"
 import PlaybackButton from "./PlaybackButton"
+import { AudioEngine } from "@/lib/audio"
 
 interface SectionBlockProps {
   section: Section
@@ -252,6 +253,7 @@ export default function SectionBlock({
                 const next = (curIdx + dir + ALL_QUALITIES.length) % ALL_QUALITIES.length
                 onQualityChange?.(i, ALL_QUALITIES[next])
               }}
+              onClick={() => AudioEngine.getInstance().playChord(slot.chord.root, slot.chord.quality, waveform)}
               className={`flex flex-col items-center gap-0.5 rounded-md px-1 transition-all ${
                 dragOverIndex === i ? "pt-4" : ""
               }`}

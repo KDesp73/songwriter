@@ -30,6 +30,7 @@ interface SectionBlockProps {
   onLyricsChange: (lyrics: string) => void
   onAddChord: (chord: { root: string; quality: string }) => void
   onInsertChordAfter?: (index: number, chord: { root: string; quality: string }) => void
+  onBeatsChange?: (index: number, beats: number) => void
   canPaste: boolean
   onCopySection: () => void
   onPasteSection: () => void
@@ -132,6 +133,7 @@ export default function SectionBlock({
   onLyricsChange,
   onAddChord,
   onInsertChordAfter,
+  onBeatsChange,
   canPaste,
   onCopySection,
   onPasteSection,
@@ -267,6 +269,23 @@ export default function SectionBlock({
               />
               <span className={`text-[10px] leading-none ${analysis.isDiatonic ? "text-muted-foreground/60" : "text-amber-400/60"}`}>
                 {analysis.function || analysis.romanNumeral}
+              </span>
+              <span className="flex items-center gap-0.5 opacity-50 transition-opacity hover:opacity-100">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onBeatsChange?.(i, Math.max(1, slot.beats - 1)) }}
+                  className="flex size-3.5 items-center justify-center rounded text-[9px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  −
+                </button>
+                <span className="min-w-[1ch] text-center text-[10px] tabular-nums text-muted-foreground">
+                  {slot.beats}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onBeatsChange?.(i, slot.beats + 1) }}
+                  className="flex size-3.5 items-center justify-center rounded text-[9px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  +
+                </button>
               </span>
             </div>
           )

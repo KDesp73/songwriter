@@ -229,3 +229,54 @@ export function getModalInterchangeChords(root: string, scale: "major" | "minor"
     (pc) => !diatonic.some((dc) => dc.root === pc.root && dc.quality === pc.quality),
   )
 }
+
+export interface ChordRecommendation {
+  chord: { root: string; quality: string }
+  label: string
+}
+
+const NEXT_CHORDS: Record<string, { roman: string; label: string }[]> = {
+  "I":    [{ roman: "ii", label: "Supertonic" }, { roman: "iii", label: "Mediant" }, { roman: "IV", label: "Subdominant" }, { roman: "V", label: "Dominant" }, { roman: "vi", label: "Submediant" }],
+  "ii":   [{ roman: "V", label: "Dominant (strong)" }, { roman: "vii°", label: "Leading Tone" }, { roman: "IV", label: "Subdominant" }],
+  "iii":  [{ roman: "vi", label: "Submediant (natural)" }, { roman: "IV", label: "Subdominant" }],
+  "IV":   [{ roman: "V", label: "Dominant (strong)" }, { roman: "I", label: "Tonic" }, { roman: "ii", label: "Supertonic" }, { roman: "vii°", label: "Leading Tone" }],
+  "V":    [{ roman: "I", label: "Tonic (resolution)" }, { roman: "vi", label: "Deceptive cadence" }],
+  "vi":   [{ roman: "ii", label: "Supertonic" }, { roman: "V", label: "Dominant" }, { roman: "IV", label: "Subdominant" }, { roman: "I", label: "Tonic" }],
+  "vii°": [{ roman: "I", label: "Tonic (resolution)" }],
+  "i":    [{ roman: "iv", label: "Subdominant" }, { roman: "V", label: "Dominant" }, { roman: "VII", label: "Subtonic" }, { roman: "VI", label: "Submediant" }],
+  "ii°":  [{ roman: "V", label: "Dominant" }, { roman: "i", label: "Tonic" }],
+  "III":  [{ roman: "VI", label: "Submediant" }, { roman: "iv", label: "Subdominant" }, { roman: "VII", label: "Subtonic" }, { roman: "i", label: "Tonic" }],
+  "iv":   [{ roman: "V", label: "Dominant (strong)" }, { roman: "i", label: "Tonic" }, { roman: "VII", label: "Subtonic" }],
+  "v":    [{ roman: "i", label: "Tonic" }, { roman: "VI", label: "Submediant" }, { roman: "VII", label: "Subtonic" }],
+  "VI":   [{ roman: "III", label: "Mediant" }, { roman: "iv", label: "Subdominant" }, { roman: "i", label: "Tonic" }, { roman: "VII", label: "Subtonic" }],
+  "VII":  [{ roman: "i", label: "Tonic" }, { roman: "III", label: "Mediant" }],
+}
+
+export function getChordRecommendations(
+  chord: { root: string; quality: string },
+  key: string,
+  scale: "major" | "minor",
+): ChordRecommendation[] {
+  const analysis = analyzeChord(chord, key, scale)
+  if (!analysis.isDiatonic) return []
+
+  const nextEntries = NEXT_CHORDS[analysis.romanNumeral]
+  if (!nextEntries) return []
+
+  const diatonics = getDiatonicChords(key, scale)
+  const romanToDiatonic: Record<string, DiatonicChord> = {}
+  for (const dc of diatonics) {
+    romanToDiatonic[dc.romanNumeral] = dc
+  }
+
+  return nextEntries
+    .map((entry) => {
+      const dc = romanToDiatonic[entry.roman]
+      if (!dc) return null
+      return {
+        chord: { root: dc.root, quality: dc.quality },
+        label: entry.label,
+      }
+    })
+    .filter((r): r is ChordRecommendation => r !== null)
+}

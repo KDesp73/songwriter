@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
-import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords } from "@/lib/chords"
+import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords, getChordRecommendations } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,7 @@ interface SectionBlockProps {
   onTabChange: (tab: string) => void
   onLyricsChange: (lyrics: string) => void
   onAddChord: (chord: { root: string; quality: string }) => void
+  onInsertChordAfter?: (index: number, chord: { root: string; quality: string }) => void
   canPaste: boolean
   onCopySection: () => void
   onPasteSection: () => void
@@ -130,6 +131,7 @@ export default function SectionBlock({
   onTabChange,
   onLyricsChange,
   onAddChord,
+  onInsertChordAfter,
   canPaste,
   onCopySection,
   onPasteSection,
@@ -138,6 +140,7 @@ export default function SectionBlock({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
+  const [ctxMenu, setCtxMenu] = useState<{ index: number; top: number; left: number } | null>(null)
   const dragIndex = useRef<number | null>(null)
   const addBtnRef = useRef<HTMLButtonElement>(null)
 
@@ -229,6 +232,11 @@ export default function SectionBlock({
                 dragIndex.current = null
               }}
               onDragEnd={() => { setDragOverIndex(null); dragIndex.current = null }}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setCtxMenu({ index: i, top: e.clientY, left: e.clientX })
+              }}
               className={`flex flex-col items-center gap-0.5 rounded-md px-1 transition-all ${
                 dragOverIndex === i ? "pt-4" : ""
               }`}
@@ -277,6 +285,41 @@ export default function SectionBlock({
                     </button>
                   ))}
                 </div>
+              </div>
+            </>,
+            document.body
+          )}
+
+          {ctxMenu && createPortal(
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setCtxMenu(null)} />
+              <div
+                className="fixed z-50 w-56 rounded-xl border bg-popover p-2 shadow-xl"
+                style={{ top: ctxMenu.top, left: ctxMenu.left }}
+                onClick={() => setCtxMenu(null)}
+              >
+                <p className="px-2 pb-1.5 pt-1 text-[11px] font-medium text-muted-foreground/70">
+                  Follows {formatChord(section.progression[ctxMenu.index].chord.root, section.progression[ctxMenu.index].chord.quality)}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {getChordRecommendations(section.progression[ctxMenu.index].chord, songKey, songScale).map((rec, j) => (
+                    <button
+                      key={j}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onInsertChordAfter?.(ctxMenu.index, rec.chord)
+                        setCtxMenu(null)
+                      }}
+                      className={`rounded-md px-2 py-1 text-xs font-medium transition-colors hover:brightness-125 ${chordBadgeColor(rec.chord.quality)}`}
+                    >
+                      {formatChord(rec.chord.root, rec.chord.quality)}
+                      <span className="ml-1.5 text-[10px] opacity-60">{rec.label}</span>
+                    </button>
+                  ))}
+                </div>
+                {getChordRecommendations(section.progression[ctxMenu.index].chord, songKey, songScale).length === 0 && (
+                  <p className="px-2 py-2 text-xs text-muted-foreground">Non-diatonic chord — no recommendations</p>
+                )}
               </div>
             </>,
             document.body

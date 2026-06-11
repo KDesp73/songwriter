@@ -251,7 +251,9 @@ export default function SectionBlock({
                 if (curIdx === -1) return
                 const dir = e.deltaY > 0 ? 1 : -1
                 const next = (curIdx + dir + ALL_QUALITIES.length) % ALL_QUALITIES.length
-                onQualityChange?.(i, ALL_QUALITIES[next])
+                const newQuality = ALL_QUALITIES[next]
+                onQualityChange?.(i, newQuality)
+                AudioEngine.getInstance().playChord(slot.chord.root, newQuality, waveform)
               }}
               onClick={() => AudioEngine.getInstance().playChord(slot.chord.root, slot.chord.quality, waveform)}
               className={`flex flex-col items-center gap-0.5 rounded-md px-1 transition-all ${

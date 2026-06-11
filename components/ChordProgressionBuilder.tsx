@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { type Song, type Section, type ProgressionSlot, TAB_TEMPLATE } from "@/lib/types"
+import { useState } from "react"
+import { type Section, type ProgressionSlot } from "@/lib/types"
 import { transposeChord, transposeNote } from "@/lib/chords"
+import { loadSong } from "@/lib/storage"
+import { usePersistedSong } from "@/hooks/usePersistedSong"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,30 +24,21 @@ function createSection(name: string): Section {
     id: crypto.randomUUID(),
     name,
     progression: [],
-    tab: TAB_TEMPLATE,
-  }
-}
-
-function createInitialSong(): Song {
-  return {
-    id: crypto.randomUUID(),
-    title: "Untitled Song",
-    key: "C",
-    scale: "major",
-    tempo: 120,
-    capoFret: 0,
-    sections: [createSection("Verse"), createSection("Chorus")],
+    tab: `e|------------------------------------------------------------------|
+B|------------------------------------------------------------------|
+G|------------------------------------------------------------------|
+D|------------------------------------------------------------------|
+A|------------------------------------------------------------------|
+E|------------------------------------------------------------------|`,
   }
 }
 
 export default function ChordProgressionBuilder() {
-  const [initial] = useState(createInitialSong)
-  const [song, setSong] = useState<Song>(initial)
-  const [activeSectionId, setActiveSectionId] = useState<string>(initial.sections[0].id)
+  const { song, updateSong, savedSongs, switchSong, newSong, deleteCurrentSong } = usePersistedSong()
+  const [activeSectionId, setActiveSectionId] = useState<string>(song.sections[0]?.id ?? "")
+  const [showSongList, setShowSongList] = useState(false)
 
-  const updateSong = useCallback((updater: (prev: Song) => Song) => {
-    setSong((prev) => updater(prev))
-  }, [])
+  const activeSection = song.sections.find((s) => s.id === activeSectionId)
 
   function setKey(key: string) {
     updateSong((s) => ({ ...s, key }))
@@ -116,11 +109,19 @@ export default function ChordProgressionBuilder() {
     }))
   }
 
+  function switchToSong(id: string) {
+    switchSong(id)
+    const loaded = loadSong(id)
+    setActiveSectionId(loaded?.sections[0]?.id ?? "")
+  }
+
+  function createNewSong() {
+    newSong()
+  }
+
   function setCapo(fret: number) {
     updateSong((s) => ({ ...s, capoFret: fret }))
   }
-
-  const activeSection = song.sections.find((s) => s.id === activeSectionId)
 
   return (
     <div className="flex h-dvh flex-col">
@@ -130,13 +131,78 @@ export default function ChordProgressionBuilder() {
         <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-r border-border bg-sidebar">
           <div className="flex flex-col gap-5 p-5">
             {/* Song Title */}
-            <Input
-              type="text"
-              value={song.title}
-              onChange={(e) => updateSong((s) => ({ ...s, title: e.target.value }))}
-              className="h-auto border-none bg-transparent p-0 text-2xl font-bold tracking-tight shadow-none focus-visible:ring-0"
-              placeholder="Song title"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                type="text"
+                value={song.title}
+                onChange={(e) => updateSong((s) => ({ ...s, title: e.target.value }))}
+                className="h-auto border-none bg-transparent p-0 text-2xl font-bold tracking-tight shadow-none focus-visible:ring-0"
+                placeholder="Song title"
+              />
+            </div>
+
+            {/* Song actions */}
+            <div className="flex gap-2">
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowSongList(!showSongList)}
+                  className="h-8 text-sm"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mr-1.5">
+                    <path d="M2 3.5H12M2 7H12M2 10.5H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  </svg>
+                  Songs
+                </Button>
+                {showSongList && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowSongList(false)} />
+                    <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-xl border bg-popover p-2 shadow-xl">
+                      {savedSongs.length === 0 && (
+                        <p className="p-3 text-sm text-muted-foreground">No saved songs</p>
+                      )}
+                      {savedSongs.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            switchToSong(m.id)
+                            setShowSongList(false)
+                          }}
+                          className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted ${
+                            m.id === song.id ? "bg-primary/10 font-medium text-primary" : ""
+                          }`}
+                        >
+                          {m.title}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={createNewSong}
+                className="h-8 text-sm"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mr-1.5">
+                  <path d="M7 2V12M2 7H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                </svg>
+                New
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={deleteCurrentSong}
+                className="h-8 text-sm text-destructive hover:text-destructive"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mr-1.5">
+                  <path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                </svg>
+                Delete
+              </Button>
+            </div>
 
             {/* Key & Scale */}
             <KeySelector

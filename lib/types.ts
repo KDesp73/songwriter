@@ -23,6 +23,7 @@ export interface Song {
   tempo: number
   capoFret: number
   sections: Section[]
+  updatedAt: number
 }
 
 export const TAB_TEMPLATE = `e|------------------------------------------------------------------|

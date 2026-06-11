@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { type Song, type Section, type ProgressionSlot } from "@/lib/types"
+import { type Song, type Section, type ProgressionSlot, TAB_TEMPLATE } from "@/lib/types"
 import { type DiatonicChord, transposeChord, transposeNote } from "@/lib/chords"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,6 +21,7 @@ function createSection(name: string): Section {
     id: crypto.randomUUID(),
     name,
     progression: [],
+    tab: TAB_TEMPLATE,
   }
 }
 
@@ -207,6 +208,7 @@ export default function ChordProgressionBuilder() {
               onRemoveChord={(index) => removeChordFromSection(section.id, index)}
               onFocusSection={() => setActiveSectionId(section.id)}
               onRemoveSection={() => removeSection(section.id)}
+              onTabChange={(tab) => updateSection(section.id, (s) => ({ ...s, tab }))}
             />
           </div>
         ))}

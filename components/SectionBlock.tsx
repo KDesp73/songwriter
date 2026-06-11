@@ -13,8 +13,10 @@ import {
   CardContent,
   CardHeader,
   CardAction,
+  CardFooter,
 } from "@/components/ui/card"
 import ChordDiagram from "./ChordDiagram"
+import TabEditor from "./TabEditor"
 
 interface SectionBlockProps {
   section: Section
@@ -23,6 +25,7 @@ interface SectionBlockProps {
   onRemoveChord: (index: number) => void
   onFocusSection: () => void
   onRemoveSection: () => void
+  onTabChange: (tab: string) => void
 }
 
 function ChordBadge({
@@ -105,6 +108,7 @@ export default function SectionBlock({
   onRemoveChord,
   onFocusSection,
   onRemoveSection,
+  onTabChange,
 }: SectionBlockProps) {
   return (
     <Card>
@@ -157,6 +161,9 @@ export default function SectionBlock({
           </Button>
         </div>
       </CardContent>
+      <CardFooter className="flex-col items-stretch gap-0 border-t-0 bg-transparent pt-0">
+        <TabEditor value={section.tab} onChange={onTabChange} />
+      </CardFooter>
     </Card>
   )
 }

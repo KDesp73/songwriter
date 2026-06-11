@@ -12,6 +12,7 @@ export interface Section {
   id: string
   name: string
   progression: ProgressionSlot[]
+  tab: string
 }
 
 export interface Song {
@@ -23,6 +24,13 @@ export interface Song {
   capoFret: number
   sections: Section[]
 }
+
+export const TAB_TEMPLATE = `e|------------------------------------------------------------------|
+B|------------------------------------------------------------------|
+G|------------------------------------------------------------------|
+D|------------------------------------------------------------------|
+A|------------------------------------------------------------------|
+E|------------------------------------------------------------------|`
 
 export interface NoteEvent {
   note: number

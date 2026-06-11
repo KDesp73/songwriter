@@ -100,3 +100,39 @@ E|------------------------------------------------------------------|`,
     updatedAt: Date.now(),
   }
 }
+
+export function exportCollection(): string {
+  const index = readIndex()
+  const songs: Song[] = []
+  for (const meta of index) {
+    const song = loadSong(meta.id)
+    if (song) songs.push(song)
+  }
+  return JSON.stringify({ version: 1, exportedAt: Date.now(), songs }, null, 2)
+}
+
+export function importCollection(json: string): { imported: number; errors: string[] } {
+  const errors: string[] = []
+  let imported = 0
+  try {
+    const data = JSON.parse(json)
+    if (!data.songs || !Array.isArray(data.songs)) {
+      return { imported: 0, errors: ["Invalid format: missing 'songs' array"] }
+    }
+    for (const song of data.songs) {
+      if (!song.id || !song.title || !song.sections) {
+        errors.push(`Skipped entry: missing id/title/sections`)
+        continue
+      }
+      for (const section of song.sections) {
+        if (!section.lyrics) section.lyrics = ""
+      }
+      if (!song.waveform) song.waveform = "triangle"
+      saveSong(song as Song)
+      imported++
+    }
+    return { imported, errors }
+  } catch (e) {
+    return { imported: 0, errors: [`Parse error: ${e instanceof Error ? e.message : "unknown"}`] }
+  }
+}

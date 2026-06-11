@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import { type Section, type ProgressionSlot } from "@/lib/types"
 import { transposeChord, transposeNote, getRelativeKey, getModalInterchangeChords, chordBadgeColor, formatChord } from "@/lib/chords"
 import { findShape } from "@/lib/chordShapes"
-import { loadSong } from "@/lib/storage"
+import { loadSong, exportCollection, importCollection } from "@/lib/storage"
 import { downloadMidi } from "@/lib/midi"
 import { usePersistedSong } from "@/hooks/usePersistedSong"
 import { Button } from "@/components/ui/button"
@@ -319,6 +319,34 @@ export default function ChordProgressionBuilder() {
     downloadMidi(song)
   }
 
+  function handleExportCollection() {
+    const json = exportCollection()
+    const blob = new Blob([json], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "songwriter_collection.json"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function handleImportCollection(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = importCollection(reader.result as string)
+      if (result.errors.length > 0) {
+        alert(`Imported ${result.imported} song(s).\nErrors:\n${result.errors.join("\n")}`)
+      } else {
+        alert(`Successfully imported ${result.imported} song(s).`)
+      }
+      switchToSong(song.id)
+    }
+    reader.readAsText(file)
+    e.target.value = ""
+  }
+
   const [copiedSection, setCopiedSection] = useState<Section | null>(null)
 
   function handleCopySection(sectionId: string) {
@@ -356,7 +384,7 @@ export default function ChordProgressionBuilder() {
             ? "fixed inset-y-0 left-0 z-40 mt-12 flex"
             : "hidden md:flex"
         }`}>
-          <div className="flex flex-col gap-5 p-5 pt-3 md:pt-5">
+          <div className="flex min-h-full flex-col gap-5 p-5 pt-3 md:pt-5">
             {/* Song Title */}
             <div className="flex items-center gap-2">
               <Input
@@ -542,6 +570,31 @@ export default function ChordProgressionBuilder() {
                 onAddChord={addChordToActiveSection}
               />
             )}
+
+            {/* Import / Export */}
+            <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
+              <Button variant="outline" size="sm" onClick={handleExportCollection} className="h-8 text-xs">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="mr-1.5">
+                  <path d="M6.5 2V9M6.5 9L4 6.5M6.5 9L9 6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M2 9V11C2 11.55 2.45 12 3 12H10C10.55 12 11 11.55 11 11V9" stroke="currentColor" strokeWidth="1.2" fill="none" />
+                </svg>
+                Export Collection
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => document.getElementById("import-input")?.click()} className="h-8 text-xs">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="mr-1.5">
+                  <path d="M6.5 9V2M6.5 2L4 4.5M6.5 2L9 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M2 9V11C2 11.55 2.45 12 3 12H10C10.55 12 11 11.55 11 11V9" stroke="currentColor" strokeWidth="1.2" fill="none" />
+                </svg>
+                Import Collection
+              </Button>
+              <input
+                id="import-input"
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImportCollection}
+              />
+            </div>
           </div>
         </aside>
 

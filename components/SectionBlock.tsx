@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { type Section } from "@/lib/types"
 import { formatChord, capoInfo, chordBadgeColor, analyzeChord, getDiatonicChords } from "@/lib/chords"
@@ -135,8 +135,16 @@ export default function SectionBlock({
   const [playingIndex, setPlayingIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [showAddMenu, setShowAddMenu] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
   const dragIndex = useRef<number | null>(null)
   const addBtnRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (showAddMenu && addBtnRef.current) {
+      const rect = addBtnRef.current.getBoundingClientRect()
+      setMenuPos({ top: rect.bottom + 4, left: rect.left })
+    }
+  }, [showAddMenu])
 
   const diatonicChords = getDiatonicChords(songKey, songScale)
 
@@ -241,14 +249,14 @@ export default function SectionBlock({
             </svg>
             Add
           </Button>
-          {showAddMenu && addBtnRef.current && createPortal(
+          {showAddMenu && createPortal(
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowAddMenu(false)} />
               <div
                 className="fixed z-50 mt-1 w-56 rounded-xl border bg-popover p-2 shadow-xl"
                 style={{
-                  top: addBtnRef.current.getBoundingClientRect().bottom + 4,
-                  left: addBtnRef.current.getBoundingClientRect().left,
+                  top: menuPos.top,
+                  left: menuPos.left,
                 }}
                 onClick={() => setShowAddMenu(false)}
               >

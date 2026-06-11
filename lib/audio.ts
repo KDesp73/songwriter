@@ -96,19 +96,19 @@ export class AudioEngine {
       if (this.stopped) break
 
       const slot = progression[i]
-      const duration = slot.beats * beatMs
+      const duration = beatsPerMeasure * beatMs
       const intervals = getChordNotes(slot.chord.root, slot.chord.quality as QualityKey)
 
       this.playChordNotes(intervals, t, duration, waveform)
 
       if (metronome) {
-        for (let b = 0; b < slot.beats; b++) {
+        for (let b = 0; b < beatsPerMeasure; b++) {
           const isDownbeat = beatCount % beatsPerMeasure === 0
           this.scheduleClick(t + b * beatMs, isDownbeat)
           beatCount++
         }
       } else {
-        beatCount += slot.beats
+        beatCount += beatsPerMeasure
       }
 
       onChordChange?.(i)

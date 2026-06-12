@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useRef } from "react"
 import { type ProgressionSlot } from "@/lib/types"
 import { AudioEngine } from "@/lib/audio"
 import { Button } from "@/components/ui/button"
@@ -17,13 +17,12 @@ interface PlaybackButtonProps {
 export default function PlaybackButton({ progression, bpm, metronome, waveform, onChordChange, beatsPerMeasure = 4 }: PlaybackButtonProps) {
   const [playing, setPlaying] = useState(false)
   const [looping, setLooping] = useState(false)
-
-  const getEngine = useCallback(() => AudioEngine.getInstance(), [])
+  const playingRef = useRef(false)
 
   async function togglePlay() {
-    const engine = getEngine()
-    if (playing) {
-      engine.stop()
+    if (playingRef.current) {
+      AudioEngine.getInstance().stop()
+      playingRef.current = false
       setPlaying(false)
       onChordChange?.(null)
       return
@@ -31,13 +30,15 @@ export default function PlaybackButton({ progression, bpm, metronome, waveform, 
 
     if (progression.length === 0) return
 
+    playingRef.current = true
     setPlaying(true)
     try {
-      await engine.playProgression(progression, bpm, (i) => {
+      await AudioEngine.getInstance().playProgression(progression, bpm, (i) => {
         onChordChange?.(i)
         if (i === null) setPlaying(false)
       }, metronome, waveform, beatsPerMeasure, looping)
     } finally {
+      playingRef.current = false
       setPlaying(false)
     }
   }

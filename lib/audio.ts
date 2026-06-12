@@ -9,6 +9,7 @@ function midiToFrequency(midi: number): number {
 
 export class AudioEngine {
   private ctx: AudioContext | null = null
+  private masterGain: GainNode | null = null
   private stopped = false
 
   private static instance: AudioEngine | null = null
@@ -30,8 +31,19 @@ export class AudioEngine {
     return this.ctx
   }
 
+  private getMasterGain(): GainNode {
+    if (!this.masterGain) {
+      const ctx = this.getCtx()
+      this.masterGain = ctx.createGain()
+      this.masterGain.gain.value = 1
+      this.masterGain.connect(ctx.destination)
+    }
+    return this.masterGain
+  }
+
   private playChordNotes(intervals: number[], startTime: number, duration: number, waveform: WaveformType = "triangle") {
     const ctx = this.getCtx()
+    const master = this.getMasterGain()
 
     intervals.forEach((interval) => {
       const midiNote = BASE_MIDI + interval + 12
@@ -49,7 +61,7 @@ export class AudioEngine {
       gainNode.gain.linearRampToValueAtTime(0, startTime + duration)
 
       osc.connect(gainNode)
-      gainNode.connect(ctx.destination)
+      gainNode.connect(master)
 
       osc.start(startTime)
       osc.stop(startTime + duration + 0.01)
@@ -58,6 +70,7 @@ export class AudioEngine {
 
   private scheduleClick(time: number, accent: boolean) {
     const ctx = this.getCtx()
+    const master = this.getMasterGain()
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
 
@@ -69,7 +82,7 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04)
 
     osc.connect(gain)
-    gain.connect(ctx.destination)
+    gain.connect(master)
 
     osc.start(time)
     osc.stop(time + 0.04)
@@ -86,6 +99,10 @@ export class AudioEngine {
   ): Promise<void> {
     this.stop()
     this.stopped = false
+    if (this.masterGain) {
+      this.masterGain.gain.cancelScheduledValues(this.ctx!.currentTime)
+      this.masterGain.gain.setValueAtTime(1, this.ctx!.currentTime)
+    }
     const ctx = this.getCtx()
     const beatMs = 60 / bpm
     let t = ctx.currentTime + 0.15
@@ -126,6 +143,12 @@ export class AudioEngine {
 
   stop() {
     this.stopped = true
+    if (this.masterGain && this.ctx) {
+      const t = this.ctx.currentTime
+      this.masterGain.gain.cancelScheduledValues(t)
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t)
+      this.masterGain.gain.linearRampToValueAtTime(0, t + 0.05)
+    }
   }
 
   playChord(root: string, quality: string, waveform: WaveformType = "triangle") {

@@ -82,6 +82,7 @@ export class AudioEngine {
     metronome = false,
     waveform: WaveformType = "triangle",
     beatsPerMeasure = 4,
+    loop = false,
   ): Promise<void> {
     this.stop()
     this.stopped = false
@@ -92,29 +93,31 @@ export class AudioEngine {
 
     onChordChange?.(null)
 
-    for (let i = 0; i < progression.length; i++) {
-      if (this.stopped) break
+    do {
+      for (let i = 0; i < progression.length; i++) {
+        if (this.stopped) break
 
-      const slot = progression[i]
-      const duration = slot.beats * beatMs
-      const intervals = getChordNotes(slot.chord.root, slot.chord.quality as QualityKey)
+        const slot = progression[i]
+        const duration = slot.beats * beatMs
+        const intervals = getChordNotes(slot.chord.root, slot.chord.quality as QualityKey)
 
-      this.playChordNotes(intervals, t, duration, waveform)
+        this.playChordNotes(intervals, t, duration, waveform)
 
-      if (metronome) {
-        for (let b = 0; b < slot.beats; b++) {
-          const isDownbeat = beatCount % beatsPerMeasure === 0
-          this.scheduleClick(t + b * beatMs, isDownbeat)
-          beatCount++
+        if (metronome) {
+          for (let b = 0; b < slot.beats; b++) {
+            const isDownbeat = beatCount % beatsPerMeasure === 0
+            this.scheduleClick(t + b * beatMs, isDownbeat)
+            beatCount++
+          }
+        } else {
+          beatCount += slot.beats
         }
-      } else {
-        beatCount += slot.beats
-      }
 
-      onChordChange?.(i)
-      await sleep(duration * 1000)
-      t += duration
-    }
+        onChordChange?.(i)
+        await sleep(duration * 1000)
+        t += duration
+      }
+    } while (loop && !this.stopped)
 
     if (!this.stopped) {
       onChordChange?.(null)
